@@ -1,0 +1,48 @@
+services:
+  # MongoDB service
+  mongodb:
+    image: mongo:6.0
+    container_name: weight-tracker-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=weight_tracker
+    command: mongod --auth
+    restart: unless-stopped
+
+  # Backend API service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: weight-tracker-backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend/uploads:/app/uploads
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - MONGODB_URI=mongodb://admin:password@mongodb:27017/weight_tracker?authSource=admin
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+  # Frontend web application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: weight-tracker-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:

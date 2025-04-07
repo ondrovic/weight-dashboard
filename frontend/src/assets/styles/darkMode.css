@@ -1,0 +1,83 @@
+/* frontend/src/assets/styles/darkMode.css */
+
+/* Add this to your main CSS file or import it separately */
+
+/* Dark mode overrides */
+.dark {
+    /* Background colors */
+    --bg-primary: #121212;
+    --bg-secondary: #1e1e1e;
+    --bg-tertiary: #2d2d2d;
+    
+    /* Text colors */
+    --text-primary: #f3f4f6;
+    --text-secondary: #d1d5db;
+    --text-muted: #9ca3af;
+    
+    /* Border colors */
+    --border-color: #374151;
+    
+    /* Apply variables */
+    color-scheme: dark;
+  }
+  
+  /* Dark mode styles */
+  .dark body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+  
+  .dark .bg-white {
+    background-color: var(--bg-secondary);
+  }
+  
+  .dark .bg-gray-50 {
+    background-color: var(--bg-primary);
+  }
+  
+  .dark .bg-gray-100 {
+    background-color: var(--bg-tertiary);
+  }
+  
+  .dark .text-gray-900 {
+    color: var(--text-primary);
+  }
+  
+  .dark .text-gray-700,
+  .dark .text-gray-800 {
+    color: var(--text-secondary);
+  }
+  
+  .dark .text-gray-500,
+  .dark .text-gray-600 {
+    color: var(--text-muted);
+  }
+  
+  .dark .border-gray-200,
+  .dark .border-gray-300 {
+    border-color: var(--border-color);
+  }
+  
+  .dark .shadow {
+    --tw-shadow-color: rgba(0, 0, 0, 0.4);
+  }
+  
+  /* Chart styles for dark mode */
+  .dark .recharts-cartesian-grid-horizontal line,
+  .dark .recharts-cartesian-grid-vertical line {
+    stroke: #4b5563;
+  }
+  
+  .dark .recharts-text {
+    fill: var(--text-secondary);
+  }
+  
+  .dark .recharts-tooltip-wrapper .recharts-default-tooltip {
+    background-color: var(--bg-tertiary) !important;
+    border-color: var(--border-color) !important;
+  }
+  
+  .dark .recharts-tooltip-wrapper .recharts-default-tooltip .recharts-tooltip-label,
+  .dark .recharts-tooltip-wrapper .recharts-default-tooltip .recharts-tooltip-item {
+    color: var(--text-secondary) !important;
+  }

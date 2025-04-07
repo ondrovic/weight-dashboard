@@ -1,0 +1,93 @@
+{
+  "weight-tracker": {
+    "docker-compose.yml": null,
+    ".gitignore": null,
+    "README.md": null,
+    "backend": {
+      "Dockerfile": null,
+      "package.json": null,
+      "tsconfig.json": null,
+      ".env": null,
+      ".env.example": null,
+      "src": {
+        "index.ts": null,
+        "config": {
+          "db.ts": null,
+          "server.ts": null
+        },
+        "models": {
+          "WeightData.ts": null
+        },
+        "services": {
+          "DataService.ts": null,
+          "ConversionService.ts": null
+        },
+        "controllers": {
+          "weightController.ts": null
+        },
+        "routes": {
+          "weightRoutes.ts": null
+        },
+        "utils": {
+          "csvParser.ts": null,
+          "dateFormatter.ts": null
+        },
+        "types": {
+          "weightData.ts": null
+        }
+      },
+      "tests": {
+        "services": {},
+        "controllers": {}
+      }
+    },
+    "frontend": {
+      "Dockerfile": null,
+      "package.json": null,
+      "tsconfig.json": null,
+      ".env": null,
+      ".env.example": null,
+      "public": {
+        "index.html": null,
+        "favicon.ico": null,
+        "assets": {}
+      },
+      "src": {
+        "main.tsx": null,
+        "App.tsx": null,
+        "vite-env.d.ts": null,
+        "components": {
+          "common": {
+            "Header.tsx": null,
+            "Footer.tsx": null,
+            "Layout.tsx": null
+          },
+          "weight": {
+            "WeightChart.tsx": null,
+            "DataTable.tsx": null,
+            "DataUpload.tsx": null,
+            "StatsCard.tsx": null
+          }
+        },
+        "hooks": {
+          "useWeightData.ts": null
+        },
+        "services": {
+          "api.ts": null
+        },
+        "utils": {
+          "formatter.ts": null,
+          "calculations.ts": null
+        },
+        "types": {
+          "weightData.ts": null
+        },
+        "assets": {
+          "styles": {
+            "main.css": null
+          }
+        }
+      }
+    }
+  }
+}

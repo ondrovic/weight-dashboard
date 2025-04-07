@@ -1,0 +1,13 @@
+/*frontend/src/assets/styles/main.css*/
+
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+/* Add any custom styles below this line */
+body {
+  font-family: system-ui, sans-serif;
+}
+
+.recharts-brush .recharts-text {
+  font-size: 10px !important;
+}
