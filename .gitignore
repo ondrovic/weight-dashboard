@@ -44,3 +44,10 @@ upload/*
 
 # But keep the folder itself
 !upload/.gitkeep
+
+
+# Ignore everything in backend/uploads
+/backend/uploads/*
+
+# Except .gitkeep
+!/backend/uploads/.gitkeep
