@@ -21,29 +21,31 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-4">Settings</h1>
-        <p className="text-gray-600 mb-8">
+    // Using w-full instead of container to maximize available space
+    <div className="w-full">
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Settings</h1>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
           Customize your weight tracking experience by adjusting these settings.
         </p>
       </div>
       
       {/* Error message */}
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           <p>{error}</p>
         </div>
       )}
       
       {/* Success message for reset */}
       {resetSuccess && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
           <p>All settings have been reset to their default values.</p>
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      {/* Reduced gap and margin */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         {/* Dark Mode Toggle */}
         <DarkModeToggle />
         
@@ -51,21 +53,21 @@ const SettingsPage: React.FC = () => {
         <WeightGoalSettings />
       </div>
       
-      <div className="mb-6">
+      <div className="mb-4">
         {/* Table Columns Settings */}
         <TableColumnsSettings />
       </div>
       
-      <div className="mb-6">
+      <div className="mb-4">
         {/* Chart Metrics Settings */}
         <ChartMetricsSettings />
       </div>
       
       {/* Reset All Settings Button */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-medium text-gray-900 mb-4">Reset Settings</h2>
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+        <h2 className="text-xl font-medium text-gray-900 dark:text-white mb-4">Reset Settings</h2>
         
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           Reset all settings to their default values. This will affect your table columns, 
           chart metrics, and weight goal.
         </p>
@@ -75,8 +77,8 @@ const SettingsPage: React.FC = () => {
           disabled={loading}
           className={`w-full py-2 px-4 rounded-md text-white ${
             loading 
-              ? 'bg-gray-400' 
-              : 'bg-red-600 hover:bg-red-700'
+              ? 'bg-gray-400 dark:bg-gray-600' 
+              : 'bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800'
           }`}
         >
           {loading ? 'Resetting...' : 'Reset All Settings'}

@@ -1,5 +1,6 @@
 // frontend/src/contexts/DarkModeProvider.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useMetrics } from './MetricsContext';
 
 type DarkModeContextType = {
   darkMode: boolean;
@@ -20,33 +21,53 @@ interface DarkModeProviderProps {
 }
 
 export const DarkModeProvider: React.FC<DarkModeProviderProps> = ({ children }) => {
-  // Initialize state from localStorage or system preference
-  const [darkMode, setDarkMode] = useState<boolean>(() => {
-    // Check localStorage first
+  // Get the darkMode state and setDarkMode function from MetricsContext
+  const { darkMode: contextDarkMode, setDarkMode: setContextDarkMode } = useMetrics();
+  
+  // Local state for immediate UI updates
+  const [localDarkMode, setLocalDarkMode] = useState<boolean>(() => {
+    // Start with the context value if available
+    if (contextDarkMode !== undefined) {
+      return contextDarkMode;
+    }
+    
+    // Otherwise check localStorage
     const savedTheme = localStorage.getItem('darkMode');
     if (savedTheme !== null) {
       return savedTheme === 'true';
     }
     
-    // Otherwise check system preference
+    // Finally check system preference
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
-  // Toggle dark mode
+  // Sync local state with context when context changes
+  useEffect(() => {
+    if (contextDarkMode !== undefined) {
+      setLocalDarkMode(contextDarkMode);
+    }
+  }, [contextDarkMode]);
+
+  // Toggle dark mode - updates both local state and context
   const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
+    const newDarkMode = !localDarkMode;
+    setLocalDarkMode(newDarkMode);
+    
+    // Update context (which will save to database via settingsApi)
+    setContextDarkMode(newDarkMode);
+    
+    // Also update localStorage for faster loading on next visit
+    localStorage.setItem('darkMode', newDarkMode.toString());
   };
 
-  // Update localStorage and document class when dark mode changes
+  // Update document class when dark mode changes
   useEffect(() => {
-    localStorage.setItem('darkMode', darkMode.toString());
-    
-    if (darkMode) {
+    if (localDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [darkMode]);
+  }, [localDarkMode]);
 
   // Listen for system theme changes
   useEffect(() => {
@@ -55,31 +76,22 @@ export const DarkModeProvider: React.FC<DarkModeProviderProps> = ({ children }) 
     const handleChange = (e: MediaQueryListEvent) => {
       // Only update if user hasn't set a preference in localStorage
       if (localStorage.getItem('darkMode') === null) {
-        setDarkMode(e.matches);
+        setLocalDarkMode(e.matches);
+        setContextDarkMode(e.matches);
       }
     };
     
-    // Add event listener (Safari support)
-    if (typeof mediaQuery.addEventListener === 'function') {
-      mediaQuery.addEventListener('change', handleChange);
-    } else {
-      // Older browsers
-      mediaQuery.addListener(handleChange);
-    }
+    // Add event listener
+    mediaQuery.addEventListener('change', handleChange);
     
     // Clean up
     return () => {
-      if (typeof mediaQuery.removeEventListener === 'function') {
-        mediaQuery.removeEventListener('change', handleChange);
-      } else {
-        // Older browsers
-        mediaQuery.removeListener(handleChange);
-      }
+      mediaQuery.removeEventListener('change', handleChange);
     };
-  }, []);
+  }, [setContextDarkMode]);
 
   return (
-    <DarkModeContext.Provider value={{ darkMode, toggleDarkMode }}>
+    <DarkModeContext.Provider value={{ darkMode: localDarkMode, toggleDarkMode }}>
       {children}
     </DarkModeContext.Provider>
   );

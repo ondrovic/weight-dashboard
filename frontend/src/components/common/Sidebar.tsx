@@ -1,6 +1,8 @@
 // frontend/src/components/common/Sidebar.tsx
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useSidebarState } from '../../contexts/SidebarContext'
+
 
 interface SidebarProps {
   isMobileMenuOpen: boolean;
@@ -12,13 +14,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
   toggleMobileMenu 
 }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isExpanded, toggleSidebar } = useSidebarState();
 
   // Navigation items
   const navigation = [
-    { name: 'Dashboard', href: '/', icon: HomeIcon },
-    { name: 'Data Entry', href: '/data', icon: DataIcon },
-    { name: 'Settings', href: '/settings', icon: SettingsIcon }
+    { name: 'Dashboard', href: '/', icon: HomeIcon, shortName: 'DB' },
+    { name: 'Data Entry', href: '/data', icon: DataIcon, shortName: 'DE' },
+    { name: 'Settings', href: '/settings', icon: SettingsIcon, shortName: 'SE' }
   ];
+
+  // Auto-collapse sidebar after navigation on mobile or after clicking a link
+  const handleNavigation = (href: string) => {
+    if (window.innerWidth < 768 && isMobileMenuOpen) {
+      toggleMobileMenu();
+    }
+    
+    if (isExpanded) {
+      // Use a slight delay to ensure navigation happens first
+      setTimeout(() => toggleSidebar(), 100);
+    }
+    
+    // Only navigate if we're not already on that page
+    if (location.pathname !== href) {
+      navigate(href);
+    }
+  };
 
   return (
     <>
@@ -50,10 +71,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               <nav className="mt-5 px-2 space-y-1">
                 {navigation.map((item) => (
-                  <Link
+                  <button
                     key={item.name}
-                    to={item.href}
-                    className={`group flex items-center px-2 py-2 text-base font-medium rounded-md ${
+                    onClick={() => handleNavigation(item.href)}
+                    className={`group flex items-center w-full px-2 py-2 text-base font-medium rounded-md ${
                       location.pathname === item.href
                         ? 'bg-indigo-50 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-200'
                         : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
@@ -68,7 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       aria-hidden="true"
                     />
                     {item.name}
-                  </Link>
+                  </button>
                 ))}
               </nav>
             </div>
@@ -79,34 +100,47 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Static sidebar for desktop */}
-      <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
+      {/* Desktop sidebar - now collapsible */}
+      <div className={`hidden md:flex md:flex-col md:fixed md:inset-y-0 ${isExpanded ? 'md:w-64' : 'md:w-16'} transition-all duration-300`}>
         <div className="flex-1 flex flex-col min-h-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-            <div className="flex items-center flex-shrink-0 px-4">
-              <h1 className="text-xl font-semibold text-indigo-600 dark:text-indigo-400">Weight Tracker</h1>
+            <div className="flex items-center flex-shrink-0 px-4 justify-between">
+              {isExpanded && (
+                <h1 className="text-xl font-semibold text-indigo-600 dark:text-indigo-400 truncate">Weight Tracker</h1>
+              )}
+              <button 
+                onClick={toggleSidebar}
+                className="p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                {isExpanded ? <ChevronLeftIcon className="h-5 w-5" /> : <ChevronRightIcon className="h-5 w-5" />}
+              </button>
             </div>
             <nav className="mt-5 flex-1 px-2 bg-white dark:bg-gray-800 space-y-1">
               {navigation.map((item) => (
-                <Link
+                <button
                   key={item.name}
-                  to={item.href}
-                  className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                  onClick={() => handleNavigation(item.href)}
+                  className={`group flex items-center w-full px-2 py-2 text-sm font-medium rounded-md ${
                     location.pathname === item.href
                       ? 'bg-indigo-50 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-200'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
-                  }`}
+                  } ${isExpanded ? 'justify-start' : 'justify-center'}`}
+                  title={item.name}
                 >
                   <item.icon
-                    className={`mr-3 flex-shrink-0 h-6 w-6 ${
+                    className={`flex-shrink-0 h-6 w-6 ${
                       location.pathname === item.href
                         ? 'text-indigo-600 dark:text-indigo-300'
                         : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-300'
                     }`}
                     aria-hidden="true"
                   />
-                  {item.name}
-                </Link>
+                  {isExpanded ? (
+                    <span className="ml-3">{item.name}</span>
+                  ) : (
+                    <span className="sr-only">{item.name}</span>
+                  )}
+                </button>
               ))}
             </nav>
           </div>
@@ -194,6 +228,44 @@ function XIcon(props: React.SVGProps<SVGSVGElement>) {
         strokeLinejoin="round" 
         strokeWidth={2} 
         d="M6 18L18 6M6 6l12 12" 
+      />
+    </svg>
+  );
+}
+
+function ChevronLeftIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      {...props}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15 19l-7-7 7-7"
+      />
+    </svg>
+  );
+}
+
+function ChevronRightIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      {...props}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 5l7 7-7 7"
       />
     </svg>
   );

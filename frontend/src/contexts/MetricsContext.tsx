@@ -8,18 +8,18 @@ export const availableMetrics: Metric[] = [
   { key: 'Date', name: 'Date', unit: '' },
   { key: 'Weight', name: 'Weight', color: '#3B82F6', unit: 'lbs' },
   { key: 'BMI', name: 'BMI', color: '#10B981', unit: '' },
-  { key: 'Body Fat %', name: 'Body Fat', color: '#F59E0B', unit: '%' },
+  { key: 'Body Fat %', name: 'Body Fat %', color: '#F59E0B', unit: '%' },
   { key: 'V-Fat', name: 'Vis Fat', color: '#EF4444', unit: '' },
   { key: 'S-Fat', name: 'Sub Fat', color: '#EC4899', unit: '' },
   { key: 'Age', name: 'Age', color: '#FBBF24', unit: 'years' },
   { key: 'HR', name: 'Heart Rate', color: '#F472B6', unit: 'bpm' },
   { key: 'Water %', name: 'Water', color: '#06B6D4', unit: '%' },
-  { key: 'Bone Mass %', name: 'Bone Mass', color: '#D946EF', unit: '%' },
-  { key: 'Protien %', name: 'Protein', color: '#9333EA', unit: '%' },
+  { key: 'Bone Mass %', name: 'Bone Mass %', color: '#D946EF', unit: '%' },
+  { key: 'Protien %', name: 'Protein %', color: '#9333EA', unit: '%' },
   { key: 'Fat Free Weight', name: 'Fat Free Weight', color: '#A78BFA', unit: 'lbs' },
-  { key: 'Bone Mass LB', name: 'Bone Mass', color: '#D946EF', unit: 'lbs' },
+  { key: 'Bone Mass LB', name: 'Bone Mass lbs', color: '#D946EF', unit: 'lbs' },
   { key: 'BMR', name: 'BMR', color: '#A855F7', unit: 'kcal' },
-  { key: 'Muscle Mass', name: 'Muscle Mass', color: '#A855F7', unit: 'lbs' }
+  { key: 'Muscle Mass', name: 'Muscle Mass lbs', color: '#A855F7', unit: 'lbs' }
 ];
 
 // Default selected metrics - these will be overridden by database values
