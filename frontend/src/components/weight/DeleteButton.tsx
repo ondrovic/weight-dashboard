@@ -45,7 +45,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
   };
   
   return (
-    <div className="relative">
+    <>
       <button
         type="button"
         onClick={handleClick}
@@ -68,18 +68,16 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
         </svg>
       </button>
       
-      {/* Confirmation Dialog */}
-      {showConfirmation && (
-        <ConfirmationDialog
-          message="Delete this record?"
-          confirmText="Delete"
-          cancelText="Cancel"
-          onConfirm={handleConfirm}
-          onCancel={handleCancel}
-          position="top"
-          width="w-48"
-        />
-      )}
-    </div>
+      {/* Modal Confirmation Dialog */}
+      <ConfirmationDialog
+        title="Delete Record"
+        message=""
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+        isOpen={showConfirmation}
+      />
+    </>
   );
 };

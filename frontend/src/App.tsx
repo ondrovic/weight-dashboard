@@ -5,6 +5,7 @@ import { Layout } from './components/common/Layout';
 import { MetricsProvider } from './contexts/MetricsContext';
 import { DarkModeProvider } from './contexts/DarkModeProvider';
 import { SidebarProvider } from './contexts/SidebarContext';
+import { ConfirmationProvider } from './contexts/ConfirmationContext';
 import WeightDashboardPage from './pages/WeightDashboardPage';
 import DataEntryPage from './pages/DataEntryPage';
 import SettingsPage from './pages/SettingsPage';
@@ -19,13 +20,15 @@ const App: React.FC = () => {
       <MetricsProvider>
         <DarkModeProvider>
           <SidebarProvider>
-            <Layout>
-              <Routes>
-                <Route path="/" element={<WeightDashboardPage />} />
-                <Route path="/data" element={<DataEntryPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-              </Routes>
-            </Layout>
+            <ConfirmationProvider>
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<WeightDashboardPage />} />
+                  <Route path="/data" element={<DataEntryPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                </Routes>
+              </Layout>
+            </ConfirmationProvider>
           </SidebarProvider>
         </DarkModeProvider>
       </MetricsProvider>

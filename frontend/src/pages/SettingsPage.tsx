@@ -1,6 +1,7 @@
 // frontend/src/pages/SettingsPage.tsx
 import React, { useState } from 'react';
 import { useMetrics } from '../contexts/MetricsContext';
+import { useConfirmation } from '../contexts/ConfirmationContext';
 import { DarkModeToggle } from '../components/settings/DarkModeToggle';
 import { WeightGoalSettings } from '../components/settings/WeightGoalSettings';
 import { TableColumnsSettings } from '../components/settings/TableColumnsSettings';
@@ -8,10 +9,20 @@ import { ChartMetricsSettings } from '../components/settings/ChartMetricsSetting
 
 const SettingsPage: React.FC = () => {
   const { resetToDefaults, loading, error } = useMetrics();
+  const { confirm } = useConfirmation();
   const [resetSuccess, setResetSuccess] = useState(false);
   
   const handleResetDefaults = async () => {
-    if (window.confirm('Are you sure you want to reset all settings to defaults?')) {
+    // Use the confirmation service instead of window.confirm
+    const confirmed = await confirm({
+      title: 'Reset Settings',
+      message: 'Are you sure you want to reset all settings to defaults? This will affect your table columns, chart metrics, and weight goal.',
+      confirmText: 'Reset',
+      cancelText: 'Cancel',
+      variant: 'danger'
+    });
+    
+    if (confirmed) {
       await resetToDefaults();
       setResetSuccess(true);
       
