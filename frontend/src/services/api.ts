@@ -1,4 +1,4 @@
-// frontend/src/services/api.ts
+// src/services/api.ts
 import axios from 'axios';
 import { WeightEntry, WeightStats, createEmptyWeightStats, processWeightData } from '../types/weightData';
 
@@ -139,8 +139,6 @@ export const weightApi = {
     }
   },
 
-  // Add this function to api.ts in the weightApi object
-
   /**
    * Create a manual weight entry
    * @param entry The weight entry data
@@ -164,6 +162,175 @@ export const weightApi = {
       await axios.delete(`${API_BASE_URL}/weight/${id}`);
     } catch (error) {
       console.error(`Error deleting weight data with ID ${id}:`, error);
+      throw error;
+    }
+  },
+
+  /**
+   * Export all weight data as a CSV file
+   */
+  async exportWeightData(): Promise<void> {
+    try {
+      // Make API request with appropriate headers to trigger file download
+      const response = await axios.get(`${API_BASE_URL}/weight/export`, {
+        responseType: 'blob' // Important - this tells axios to handle the response as a file
+      });
+      
+      // Create a URL for the blob and trigger download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Get filename from content-disposition header or use a default
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = 'weight-data-export.csv';
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+        if (filenameMatch && filenameMatch.length === 2) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting weight data:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Download a CSV template with the correct headers
+   */
+  async downloadWeightDataTemplate(): Promise<void> {
+    try {
+      // Make API request with appropriate headers to trigger file download
+      const response = await axios.get(`${API_BASE_URL}/weight/template`, {
+        responseType: 'blob'
+      });
+      
+      // Create a URL for the blob and trigger download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Get filename from content-disposition header or use a default
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = 'weight-data-template.csv';
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+        if (filenameMatch && filenameMatch.length === 2) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading weight data template:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Clear all weight data
+   */
+  async clearAllWeightData(): Promise<void> {
+    try {
+      await axios.delete(`${API_BASE_URL}/weight/all`);
+    } catch (error) {
+      console.error('Error clearing weight data:', error);
+      throw error;
+    }
+  }
+};
+
+/**
+ * API service for user settings
+ */
+export const settingsApi = {
+  /**
+   * Get user settings
+   */
+  async getSettings(): Promise<any> {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/settings`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user settings:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Update user settings
+   */
+  async updateSettings(settings: any): Promise<any> {
+    try {
+      const response = await axios.put(`${API_BASE_URL}/settings`, settings);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating user settings:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Update table metrics
+   */
+  async updateTableMetrics(tableMetrics: string[]): Promise<any> {
+    return this.updateSettings({ tableMetrics });
+  },
+  
+  /**
+   * Update chart metrics
+   */
+  async updateChartMetrics(chartMetrics: string[]): Promise<any> {
+    return this.updateSettings({ chartMetrics });
+  },
+  
+  /**
+   * Update default visible metrics
+   */
+  async updateDefaultVisibleMetrics(defaultVisibleMetrics: string[]): Promise<any> {
+    return this.updateSettings({ defaultVisibleMetrics });
+  },
+  
+  /**
+   * Update goal weight
+   */
+  async updateGoalWeight(goalWeight: number | null): Promise<any> {
+    return this.updateSettings({ goalWeight });
+  },
+  
+  /**
+   * Update dark mode setting
+   */
+  async updateDarkMode(darkMode: boolean): Promise<any> {
+    return this.updateSettings({ darkMode });
+  },
+  
+  /**
+   * Reset settings to defaults
+   */
+  async resetSettings(): Promise<any> {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/settings/reset`);
+      return response.data;
+    } catch (error) {
+      console.error('Error resetting user settings:', error);
       throw error;
     }
   }

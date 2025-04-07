@@ -1,4 +1,4 @@
-// frontend/src/hooks/useWeightData.ts
+// src/hooks/useWeightData.ts
 import { useState, useEffect } from 'react';
 import { weightApi } from '../services/api';
 import { WeightEntry, WeightStats } from '../types/weightData';
@@ -121,6 +121,61 @@ export const useWeightData = () => {
     }
   };
 
+  /**
+   * Export all weight data as a CSV file
+   */
+  const exportData = async (): Promise<void> => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      await weightApi.exportWeightData();
+    } catch (err) {
+      setError('Failed to export data');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Download a CSV template with correct headers
+   */
+  const downloadTemplate = async (): Promise<void> => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      await weightApi.downloadWeightDataTemplate();
+    } catch (err) {
+      setError('Failed to download template');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Clear all weight data after confirmation
+   */
+  const clearAllData = async (): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      await weightApi.clearAllWeightData();
+      await fetchData(); // Refresh data after clearing
+      
+      return true;
+    } catch (err) {
+      setError('Failed to clear data');
+      console.error(err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch data when component mounts
   useEffect(() => {
     fetchData();
@@ -137,6 +192,9 @@ export const useWeightData = () => {
     updateWeightData,
     getWeightDataById,
     getWeightDataByDateRange,
-    deleteWeightData
+    deleteWeightData,
+    exportData,
+    downloadTemplate,
+    clearAllData
   };
 };

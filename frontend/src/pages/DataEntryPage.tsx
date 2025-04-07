@@ -1,9 +1,11 @@
-// frontend/src/pages/DataEntryPage.tsx
-import React from 'react';
+// src/pages/DataEntryPage.tsx
+import React, { useState } from 'react';
 import { useWeightData } from '../hooks/useWeightData';
-import { DataUpload } from '../components/weight/DataUpload';
-import { WeightEntryForm } from '../components/weight/WeightEntryForm';
 import { DataTable } from '../components/weight/DataTable';
+import { WeightEntryForm } from '../components/weight/WeightEntryForm';
+import { DataUpload } from '../components/weight/DataUpload';
+import { DataManagement } from '../components/weight/DataManagement';
+import { TabsComponent, TabItem } from '../components/common/TabsComponent';
 
 const DataEntryPage: React.FC = () => {
   const { 
@@ -14,6 +16,9 @@ const DataEntryPage: React.FC = () => {
     createWeightEntry,
     updateWeightData,
     deleteWeightData,
+    exportData,
+    downloadTemplate,
+    clearAllData,
     refreshData 
   } = useWeightData();
 
@@ -27,8 +32,18 @@ const DataEntryPage: React.FC = () => {
     return await deleteWeightData(id);
   };
 
+  // Define tabs
+  const tabs: TabItem[] = [
+    { id: 'data', label: 'Data', icon: 'table' },
+    { id: 'add-record', label: 'Add Single Record', icon: 'plus' },
+    { id: 'upload', label: 'Upload Records', icon: 'upload' },
+    { id: 'manage', label: 'Manage', icon: 'cog' }
+  ];
+
+  // Default active tab
+  const [activeTab, setActiveTab] = useState<string>(tabs[0].id);
+
   return (
-    // Using w-full instead of container to maximize available space
     <div className="w-full">
       {/* Error message */}
       {dataError && (
@@ -44,60 +59,53 @@ const DataEntryPage: React.FC = () => {
       )}
       
       <div className="mb-4">
-        <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Data Entry</h1>
+        <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Data Management</h1>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
-          Add new weight measurements or upload data from your smart scale.
+          View, add, import, and manage your weight tracking data.
         </p>
       </div>
 
-      {/* Reduced gap between form and upload component */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-        {/* Manual Entry Form */}
-        <div>
-          <WeightEntryForm onSubmit={createWeightEntry} loading={dataLoading} />
-        </div>
-        
-        {/* Upload Component */}
-        <div>
-          <DataUpload uploadData={uploadData} loading={dataLoading} />
-        </div>
-      </div>
+      {/* Tabs Component */}
+      <TabsComponent 
+        tabs={tabs} 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab} 
+      />
 
-      {/* Data Table */}
-      <div className="mb-4">
-        <DataTable 
-          data={data} 
-          loading={dataLoading} 
-          onUpdateRecord={handleUpdateRecord}
-          onDeleteRecord={handleDeleteRecord}
-        />
-      </div>
+      {/* Tab Content */}
+      <div className="mt-4">
+        {activeTab === 'data' && (
+          <DataTable 
+            data={data} 
+            loading={dataLoading} 
+            onUpdateRecord={handleUpdateRecord}
+            onDeleteRecord={handleDeleteRecord}
+          />
+        )}
 
-      {/* Instructions */}
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md mb-4">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Instructions</h2>
-        
-        <div className="mb-4">
-          <h3 className="text-lg font-medium mb-2 text-gray-800 dark:text-gray-200">Manual Entry</h3>
-          <p className="text-gray-700 dark:text-gray-300">
-            Use the form to manually enter weight data. At minimum, you need to provide 
-            a date and weight value. Additional metrics like BMI, body fat percentage, etc. 
-            are optional.
-          </p>
-        </div>
-        
-        <div>
-          <h3 className="text-lg font-medium mb-2 text-gray-800 dark:text-gray-200">Data Upload</h3>
-          <p className="text-gray-700 dark:text-gray-300">
-            You can upload a CSV file exported from your smart scale. The file should 
-            contain at least the date and weight columns. The system will automatically 
-            detect and process the data format.
-          </p>
-          <p className="text-gray-700 dark:text-gray-300 mt-2">
-            If you're uploading data for dates that already exist in the system, the 
-            new data will update the existing records.
-          </p>
-        </div>
+        {activeTab === 'add-record' && (
+          <WeightEntryForm 
+            onSubmit={createWeightEntry} 
+            loading={dataLoading} 
+            expandedByDefault={true}
+          />
+        )}
+
+        {activeTab === 'upload' && (
+          <DataUpload 
+            uploadData={uploadData} 
+            loading={dataLoading} 
+          />
+        )}
+
+        {activeTab === 'manage' && (
+          <DataManagement 
+            onExport={exportData}
+            onDownloadTemplate={downloadTemplate}
+            onClearData={clearAllData}
+            loading={dataLoading}
+          />
+        )}
       </div>
     </div>
   );

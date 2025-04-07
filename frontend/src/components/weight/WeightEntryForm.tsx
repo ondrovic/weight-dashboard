@@ -1,13 +1,18 @@
-// frontend/src/components/weight/WeightEntryForm.tsx
+// src/components/weight/WeightEntryForm.tsx
 import React, { useState } from 'react';
 import { WeightEntry } from '../../types/weightData';
 
 interface WeightEntryFormProps {
   onSubmit: (entry: Partial<WeightEntry>) => Promise<boolean>;
   loading: boolean;
+  expandedByDefault?: boolean;
 }
 
-export const WeightEntryForm: React.FC<WeightEntryFormProps> = ({ onSubmit, loading }) => {
+export const WeightEntryForm: React.FC<WeightEntryFormProps> = ({ 
+  onSubmit, 
+  loading, 
+  expandedByDefault = false 
+}) => {
   const [formData, setFormData] = useState<Partial<WeightEntry>>({
     Date: formatCurrentDate(),
     Weight: undefined,
@@ -28,7 +33,7 @@ export const WeightEntryForm: React.FC<WeightEntryFormProps> = ({ onSubmit, load
   
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<boolean>(false);
-  const [showAllFields, setShowAllFields] = useState<boolean>(false);
+  const [showAllFields, setShowAllFields] = useState<boolean>(expandedByDefault);
   
   // Format current date as MM-DD-YY for the form
   function formatCurrentDate(): string {
@@ -122,6 +127,11 @@ export const WeightEntryForm: React.FC<WeightEntryFormProps> = ({ onSubmit, load
           BMR: undefined,
           "Muscle Mass": undefined,
         });
+        
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+          setFormSuccess(false);
+        }, 3000);
       } else {
         setFormError('Failed to save entry');
       }
@@ -180,17 +190,19 @@ export const WeightEntryForm: React.FC<WeightEntryFormProps> = ({ onSubmit, load
         </div>
         
         {/* Toggle for additional fields */}
-        <button 
-          type="button"
-          onClick={() => setShowAllFields(!showAllFields)}
-          className="mb-4 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 focus:outline-none"
-        >
-          {showAllFields ? 'Hide additional fields' : 'Show additional fields'}
-        </button>
+        {!expandedByDefault && (
+          <button 
+            type="button"
+            onClick={() => setShowAllFields(!showAllFields)}
+            className="mb-4 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 focus:outline-none"
+          >
+            {showAllFields ? 'Hide additional fields' : 'Show additional fields'}
+          </button>
+        )}
         
-        {/* Additional fields (collapsible) */}
-        {showAllFields && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        {/* Additional fields (always shown if expandedByDefault is true) */}
+        {(showAllFields || expandedByDefault) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
             {optionalFields.map(field => (
               <div key={field.name} className="mb-2">
                 <label htmlFor={field.name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
