@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useMetrics } from '../contexts/MetricsContext';
 import { useConfirmation } from '../contexts/ConfirmationContext';
-import { DarkModeToggle } from '../components/settings/DarkModeToggle';
+// import { DarkModeToggle } from '../components/settings/DarkModeToggle';
 import { WeightGoalSettings } from '../components/settings/WeightGoalSettings';
 import { TableColumnsSettings } from '../components/settings/TableColumnsSettings';
 import { ChartMetricsSettings } from '../components/settings/ChartMetricsSettings';
@@ -56,9 +56,9 @@ const SettingsPage: React.FC = () => {
       )}
       
       {/* Reduced gap and margin */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         {/* Dark Mode Toggle */}
-        <DarkModeToggle />
+        {/* <DarkModeToggle /> */}
         
         {/* Weight Goal Settings */}
         <WeightGoalSettings />

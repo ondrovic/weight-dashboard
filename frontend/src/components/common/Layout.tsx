@@ -2,6 +2,7 @@ import React, { ReactNode, useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
 import { useSidebarState } from '../../contexts/SidebarContext'; // Adjusted import path
+import { MenuIcon } from './Icons';
 
 interface LayoutProps {
   children: ReactNode;
@@ -49,23 +50,3 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     </div>
   );
 };
-
-// Menu icon for mobile view
-function MenuIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      fill="none" 
-      viewBox="0 0 24 24" 
-      stroke="currentColor" 
-      {...props}
-    >
-      <path 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        strokeWidth={2} 
-        d="M4 6h16M4 12h16M4 18h16" 
-      />
-    </svg>
-  );
-}
