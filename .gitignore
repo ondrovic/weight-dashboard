@@ -39,3 +39,8 @@ Thumbs.db
 # Optional: coverage from test tools like Jest
 coverage/
 
+# Ignore all files in upload/
+upload/*
+
+# But keep the folder itself
+!upload/.gitkeep
