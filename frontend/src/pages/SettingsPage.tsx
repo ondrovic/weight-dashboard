@@ -1,11 +1,11 @@
-// frontend/src/pages/SettingsPage.tsx
+// src/pages/SettingsPage.tsx
 import React, { useState } from 'react';
 import { useMetrics } from '../contexts/MetricsContext';
 import { useConfirmation } from '../contexts/ConfirmationContext';
-// import { DarkModeToggle } from '../components/settings/DarkModeToggle';
 import { WeightGoalSettings } from '../components/settings/WeightGoalSettings';
 import { TableColumnsSettings } from '../components/settings/TableColumnsSettings';
 import { ChartMetricsSettings } from '../components/settings/ChartMetricsSettings';
+import { DefaultVisibleMetricsSettings } from '../components/settings/DefaultVisibleMetricsSettings';
 
 const SettingsPage: React.FC = () => {
   const { resetToDefaults, loading, error } = useMetrics();
@@ -16,7 +16,7 @@ const SettingsPage: React.FC = () => {
     // Use the confirmation service instead of window.confirm
     const confirmed = await confirm({
       title: 'Reset Settings',
-      message: 'Are you sure you want to reset all settings to defaults? This will affect your table columns, chart metrics, and weight goal.',
+      message: 'Are you sure you want to reset all settings to defaults? This will affect your table columns, chart metrics, default visible metrics, and weight goal.',
       confirmText: 'Reset',
       cancelText: 'Cancel',
       variant: 'danger'
@@ -55,32 +55,30 @@ const SettingsPage: React.FC = () => {
         </div>
       )}
       
-      {/* Reduced gap and margin */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        {/* Dark Mode Toggle */}
-        {/* <DarkModeToggle /> */}
-        
-        {/* Weight Goal Settings */}
+      {/* Weight Goal at the top */}
+      <div className="mb-4">
         <WeightGoalSettings />
       </div>
       
-      <div className="mb-4">
+      {/* Three settings in a row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        {/* Default Visible Metrics */}
+        <DefaultVisibleMetricsSettings />
+        
         {/* Table Columns Settings */}
         <TableColumnsSettings />
-      </div>
-      
-      <div className="mb-4">
+        
         {/* Chart Metrics Settings */}
         <ChartMetricsSettings />
       </div>
       
       {/* Reset All Settings Button */}
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-medium text-gray-900 dark:text-white mb-4">Reset Settings</h2>
         
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           Reset all settings to their default values. This will affect your table columns, 
-          chart metrics, and weight goal.
+          chart metrics, default visible metrics, and weight goal.
         </p>
         
         <button
@@ -92,7 +90,7 @@ const SettingsPage: React.FC = () => {
               : 'bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800'
           }`}
         >
-          {loading ? 'Resetting...' : 'Reset All Settings'}
+          Reset All Settings
         </button>
       </div>
     </div>

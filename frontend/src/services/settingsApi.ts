@@ -1,4 +1,4 @@
-// frontend/src/services/settingsApi.ts
+// src/services/settingsApi.ts
 import axios from 'axios';
 
 const API_BASE_URL = '/api';
@@ -9,6 +9,7 @@ export interface UserSettings {
   displayName: string;
   tableMetrics: string[];
   chartMetrics: string[];
+  defaultVisibleMetrics: string[];
   goalWeight: number | null;
   darkMode?: boolean;
 }
@@ -55,6 +56,13 @@ export const settingsApi = {
    */
   async updateChartMetrics(chartMetrics: string[]): Promise<UserSettings> {
     return this.updateSettings({ chartMetrics });
+  },
+  
+  /**
+   * Update default visible metrics
+   */
+  async updateDefaultVisibleMetrics(defaultVisibleMetrics: string[]): Promise<UserSettings> {
+    return this.updateSettings({ defaultVisibleMetrics });
   },
   
   /**

@@ -1,4 +1,4 @@
-// frontend/src/components/weight/WeightChart.tsx
+// src/components/weight/WeightChart.tsx
 import React, { useMemo, useState, useEffect } from 'react';
 import {
   LineChart,
@@ -44,15 +44,25 @@ export const WeightChart: React.FC<WeightChartProps> = ({
   height = 400,
   goal,
 }) => {
-  const { chartMetrics, availableMetrics, darkMode } = useMetrics();
+  const { chartMetrics, defaultVisibleMetrics, availableMetrics, darkMode } = useMetrics();
   
   // Local state to track which metrics are actively displayed
   const [activeMetrics, setActiveMetrics] = useState<string[]>([]);
   
-  // Initialize activeMetrics from chartMetrics when component mounts or chartMetrics changes
+  // Initialize activeMetrics from defaultVisibleMetrics when component mounts
   useEffect(() => {
-    setActiveMetrics(chartMetrics);
-  }, [chartMetrics]);
+    // Filter defaultVisibleMetrics to only include metrics that are in chartMetrics
+    const validDefaultMetrics = defaultVisibleMetrics.filter(metric => 
+      chartMetrics.includes(metric)
+    );
+    
+    // If no valid default metrics, show all chart metrics
+    const initialActiveMetrics = validDefaultMetrics.length > 0 
+      ? validDefaultMetrics 
+      : chartMetrics;
+    
+    setActiveMetrics(initialActiveMetrics);
+  }, [chartMetrics, defaultVisibleMetrics]);
 
   const chartData = useMemo(() => {
     if (!data || !Array.isArray(data) || data.length === 0) return [];

@@ -1,4 +1,4 @@
-// frontend/src/contexts/MetricsContext.tsx
+// src/contexts/MetricsContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Metric } from '../components/common/MetricSelector';
 import { settingsApi } from '../services/settingsApi';
@@ -31,14 +31,19 @@ const DEFAULT_CHART_METRICS = [
   'Weight', 'BMI', 'Body Fat %', 'V-Fat', 'S-Fat', 'Water %', 'BMR'
 ];
 
+// Default visible metrics (initially showing only Weight)
+const DEFAULT_VISIBLE_METRICS = ['Weight'];
+
 interface MetricsContextType {
   availableMetrics: Metric[];
   tableMetrics: string[];
   chartMetrics: string[];
+  defaultVisibleMetrics: string[];
   goalWeight: number | null;
   darkMode: boolean;
   setTableMetrics: (metrics: string[]) => void;
   setChartMetrics: (metrics: string[]) => void;
+  setDefaultVisibleMetrics: (metrics: string[]) => void;
   setGoalWeight: (weight: number | null) => void;
   setDarkMode: (enabled: boolean) => void;
   toggleDarkMode: () => void;
@@ -58,6 +63,7 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
   // State for metrics and settings
   const [tableMetrics, setTableMetricsState] = useState<string[]>(DEFAULT_TABLE_METRICS);
   const [chartMetrics, setChartMetricsState] = useState<string[]>(DEFAULT_CHART_METRICS);
+  const [defaultVisibleMetrics, setDefaultVisibleMetricsState] = useState<string[]>(DEFAULT_VISIBLE_METRICS);
   const [goalWeight, setGoalWeightState] = useState<number | null>(null);
   const [darkMode, setDarkModeState] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
@@ -128,6 +134,10 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
           setChartMetricsState(settings.chartMetrics);
         }
         
+        if (settings.defaultVisibleMetrics && settings.defaultVisibleMetrics.length > 0) {
+          setDefaultVisibleMetricsState(settings.defaultVisibleMetrics);
+        }
+        
         setGoalWeightState(settings.goalWeight);
         
         // Check if darkMode setting exists
@@ -181,6 +191,19 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
     }
   };
 
+  const setDefaultVisibleMetrics = async (metrics: string[]) => {
+    try {
+      // Update local state immediately for responsive UI
+      setDefaultVisibleMetricsState(metrics);
+      
+      // Update database
+      await settingsApi.updateDefaultVisibleMetrics(metrics);
+    } catch (err) {
+      console.error('Failed to update default visible metrics:', err);
+      setError('Failed to save default visible metrics to the server.');
+    }
+  };
+
   const setGoalWeight = async (weight: number | null) => {
     try {
       // Update local state immediately for responsive UI
@@ -223,6 +246,7 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
       // Update local state with received default values
       setTableMetricsState(settings.tableMetrics);
       setChartMetricsState(settings.chartMetrics);
+      setDefaultVisibleMetricsState(settings.defaultVisibleMetrics || DEFAULT_VISIBLE_METRICS);
       setGoalWeightState(settings.goalWeight);
       // Don't reset dark mode to maintain user preference
       
@@ -246,10 +270,12 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
         availableMetrics,
         tableMetrics,
         chartMetrics,
+        defaultVisibleMetrics,
         goalWeight,
         darkMode,
         setTableMetrics,
         setChartMetrics,
+        setDefaultVisibleMetrics,
         setGoalWeight,
         setDarkMode,
         toggleDarkMode,

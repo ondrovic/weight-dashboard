@@ -1,5 +1,5 @@
 // frontend/src/components/settings/TableColumnsSettings.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMetrics } from '../../contexts/MetricsContext';
 
 export const TableColumnsSettings: React.FC = () => {
@@ -15,7 +15,7 @@ export const TableColumnsSettings: React.FC = () => {
   const [selectedColumns, setSelectedColumns] = useState<string[]>(tableMetrics);
   
   // Update local state when context updates
-  React.useEffect(() => {
+  useEffect(() => {
     setSelectedColumns(tableMetrics);
   }, [tableMetrics]);
   
@@ -60,20 +60,20 @@ export const TableColumnsSettings: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-medium text-gray-900 mb-4">Table Columns</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 h-full">
+      <h2 className="text-xl font-medium text-gray-900 dark:text-white mb-4">Table Columns</h2>
       
-      <p className="mb-3 text-sm text-gray-500">
+      <p className="mb-3 text-sm text-gray-500 dark:text-gray-400">
         Select which metrics to display in the data table.
       </p>
       
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 grid-cols-3">
           {availableMetrics.map(metric => (
             <div 
               key={metric.key} 
               className={`flex items-center p-3 rounded-md ${
-                metric.key === 'Date' ? 'bg-gray-100' : 'hover:bg-gray-50'
+                metric.key === 'Date' ? 'bg-gray-100 dark:bg-gray-700' : 'hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               <input
@@ -82,17 +82,21 @@ export const TableColumnsSettings: React.FC = () => {
                 checked={selectedColumns.includes(metric.key)}
                 onChange={() => toggleColumn(metric.key)}
                 disabled={metric.key === 'Date'}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded"
+              />
+              <div 
+                className="w-3 h-3 ml-2 rounded-full" 
+                style={{ backgroundColor: metric.color }}
               />
               <label
                 htmlFor={`table-column-${metric.key}`}
-                className={`ml-3 ${
-                  metric.key === 'Date' ? 'text-gray-500' : 'text-gray-700'
+                className={`ml-2 ${
+                  metric.key === 'Date' ? 'text-gray-500 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'
                 }`}
               >
                 {metric.name}
                 {metric.key === 'Date' && (
-                  <span className="ml-1 text-xs text-gray-500">(required)</span>
+                  <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">(required)</span>
                 )}
               </label>
             </div>
@@ -103,21 +107,21 @@ export const TableColumnsSettings: React.FC = () => {
           <button
             type="button"
             onClick={selectAll}
-            className="text-sm text-indigo-600 hover:text-indigo-800"
+            className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
           >
             Select All
           </button>
           <button
             type="button"
             onClick={selectNone}
-            className="text-sm text-indigo-600 hover:text-indigo-800"
+            className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
           >
             Select None
           </button>
         </div>
         
         {isSaved && (
-          <div className="p-2 bg-green-50 text-green-700 rounded">
+          <div className="p-2 bg-green-50 text-green-700 dark:bg-green-900 dark:bg-opacity-20 dark:text-green-300 rounded">
             Table columns saved successfully!
           </div>
         )}
@@ -125,13 +129,9 @@ export const TableColumnsSettings: React.FC = () => {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full py-2 px-4 rounded-md text-white ${
-            loading 
-              ? 'bg-gray-400' 
-              : 'bg-indigo-600 hover:bg-indigo-700'
-          }`}
+          className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 text-white rounded-md"
         >
-          {loading ? 'Saving...' : 'Save Columns'}
+          Save Columns
         </button>
       </form>
     </div>
