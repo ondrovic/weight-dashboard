@@ -1,4 +1,4 @@
-//backend/src/routes/weightRoutes.ts - Updated with PUT endpoint
+//backend/src/routes/weightRoutes.ts
 import { Router } from 'express';
 import { 
   getWeightData, 
@@ -10,7 +10,10 @@ import {
   getWeightDataById,
   getAllWeightIds,
   upload, 
-  createWeightEntry
+  createWeightEntry,
+  exportWeightData,
+  downloadWeightDataTemplate,
+  clearAllWeightData
 } from '../controllers/weightController';
 
 const router = Router();
@@ -84,6 +87,69 @@ router.get('/stats', getWeightStats);
  *         description: Server error
  */
 router.get('/ids', getAllWeightIds);
+
+/**
+ * @swagger
+ * /api/weight/export:
+ *   get:
+ *     summary: Export all weight data as a CSV file
+ *     tags: [Weight]
+ *     responses:
+ *       200:
+ *         description: CSV file with all weight data
+ *         content:
+ *           text/csv:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: No data to export
+ *       500:
+ *         description: Server error
+ */
+router.get('/export', exportWeightData);
+
+/**
+ * @swagger
+ * /api/weight/template:
+ *   get:
+ *     summary: Download a CSV template with the correct headers
+ *     tags: [Weight]
+ *     responses:
+ *       200:
+ *         description: CSV template file
+ *         content:
+ *           text/csv:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       500:
+ *         description: Server error
+ */
+router.get('/template', downloadWeightDataTemplate);
+
+/**
+ * @swagger
+ * /api/weight/all:
+ *   delete:
+ *     summary: Delete all weight data records
+ *     tags: [Weight]
+ *     responses:
+ *       200:
+ *         description: All records deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 deletedCount:
+ *                   type: number
+ *       500:
+ *         description: Server error
+ */
+router.delete('/all', clearAllWeightData);
 
 /**
  * @swagger
@@ -161,6 +227,80 @@ router.get('/range', getWeightDataRange);
  *         description: Error processing data
  */
 router.post('/upload', upload.single('file'), uploadWeightData);
+
+/**
+ * @swagger
+ * /api/weight/entry:
+ *   post:
+ *     summary: Create a manual weight data entry
+ *     tags: [Weight]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - Date
+ *               - Weight
+ *             properties:
+ *               Date:
+ *                 type: string
+ *                 format: MM-DD-YY
+ *                 description: Date of the weight measurement
+ *               Weight:
+ *                 type: number
+ *                 description: Weight in pounds
+ *               BMI:
+ *                 type: number
+ *                 description: Body Mass Index
+ *               Body Fat %:
+ *                 type: number
+ *                 description: Body fat percentage
+ *               V-Fat:
+ *                 type: number
+ *                 description: Visceral fat
+ *               S-Fat:
+ *                 type: number
+ *                 description: Subcutaneous fat
+ *               Age:
+ *                 type: number
+ *                 description: Metabolic age
+ *               HR:
+ *                 type: number
+ *                 description: Heart rate
+ *               Water %:
+ *                 type: number
+ *                 description: Water percentage
+ *               Bone Mass %:
+ *                 type: number
+ *                 description: Bone mass percentage
+ *               Protien %:
+ *                 type: number
+ *                 description: Protein percentage
+ *               Fat Free Weight:
+ *                 type: number
+ *                 description: Fat free weight in pounds
+ *               Bone Mass LB:
+ *                 type: number
+ *                 description: Bone mass in pounds
+ *               BMR:
+ *                 type: number
+ *                 description: Basal Metabolic Rate
+ *               Muscle Mass:
+ *                 type: number
+ *                 description: Muscle mass in pounds
+ *     responses:
+ *       201:
+ *         description: Weight entry created successfully
+ *       200:
+ *         description: Weight entry updated successfully (if date already exists)
+ *       400:
+ *         description: Invalid request data
+ *       500:
+ *         description: Server error
+ */
+router.post('/entry', createWeightEntry);
 
 /**
  * @swagger
@@ -333,79 +473,5 @@ router.put('/:id', updateWeightData);
  *         description: Record not found
  */
 router.delete('/:id', deleteWeightData);
-
-/**
- * @swagger
- * /api/weight/entry:
- *   post:
- *     summary: Create a manual weight data entry
- *     tags: [Weight]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - Date
- *               - Weight
- *             properties:
- *               Date:
- *                 type: string
- *                 format: MM-DD-YY
- *                 description: Date of the weight measurement
- *               Weight:
- *                 type: number
- *                 description: Weight in pounds
- *               BMI:
- *                 type: number
- *                 description: Body Mass Index
- *               Body Fat %:
- *                 type: number
- *                 description: Body fat percentage
- *               V-Fat:
- *                 type: number
- *                 description: Visceral fat
- *               S-Fat:
- *                 type: number
- *                 description: Subcutaneous fat
- *               Age:
- *                 type: number
- *                 description: Metabolic age
- *               HR:
- *                 type: number
- *                 description: Heart rate
- *               Water %:
- *                 type: number
- *                 description: Water percentage
- *               Bone Mass %:
- *                 type: number
- *                 description: Bone mass percentage
- *               Protien %:
- *                 type: number
- *                 description: Protein percentage
- *               Fat Free Weight:
- *                 type: number
- *                 description: Fat free weight in pounds
- *               Bone Mass LB:
- *                 type: number
- *                 description: Bone mass in pounds
- *               BMR:
- *                 type: number
- *                 description: Basal Metabolic Rate
- *               Muscle Mass:
- *                 type: number
- *                 description: Muscle mass in pounds
- *     responses:
- *       201:
- *         description: Weight entry created successfully
- *       200:
- *         description: Weight entry updated successfully (if date already exists)
- *       400:
- *         description: Invalid request data
- *       500:
- *         description: Server error
- */
-router.post('/entry', createWeightEntry);
 
 export default router;

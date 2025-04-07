@@ -184,7 +184,6 @@ export const getWeightDataById = async (req: Request, res: Response): Promise<vo
   }
 };
 
-
 /**
  * Get a list of all weight record IDs
  * @route GET /api/weight/ids
@@ -276,7 +275,6 @@ export const getWeightStats = async (req: Request, res: Response): Promise<void>
     });
   }
 };
-
 
 /**
  * Delete a weight data record
@@ -648,4 +646,108 @@ const convertToDbFieldNames = (data: any): Record<string, any> => {
   });
 
   return result;
+};
+
+/**
+ * Export all weight data as a CSV file
+ * @route GET /api/weight/export
+ */
+export const exportWeightData = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Get all weight data
+    const { data } = await dataService.getProcessedData();
+    
+    if (data.length === 0) {
+      res.status(404).json({ error: 'No data to export' });
+      return;
+    }
+
+    // Define headers for the CSV file
+    const headers = [
+      'Date', 'Weight', 'BMI', 'Body Fat %', 'V-Fat', 'S-Fat', 
+      'Age', 'HR', 'Water %', 'Bone Mass %', 'Protien %',
+      'Fat Free Weight', 'Bone Mass LB', 'BMR', 'Muscle Mass'
+    ];
+
+    // Create CSV content
+    let csvContent = headers.join(',') + '\n';
+
+    // Add data rows
+    data.forEach(record => {
+      const row = headers.map(header => {
+        // Handle special cases for formatting
+        if (header === 'Date') {
+          return `"${record.Date}"`;
+        }
+        return record[header as keyof typeof record] || 0;
+      });
+      csvContent += row.join(',') + '\n';
+    });
+
+    // Set response headers
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=weight-data-export.csv');
+    
+    // Send the CSV file
+    res.status(200).send(csvContent);
+  } catch (error) {
+    console.error('Error exporting weight data:', error);
+    res.status(500).json({
+      error: 'Error exporting weight data',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
+/**
+ * Download a CSV template with the correct headers
+ * @route GET /api/weight/template
+ */
+export const downloadWeightDataTemplate = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Define headers for the CSV file
+    const headers = [
+      'Date', 'Weight', 'BMI', 'Body Fat %', 'V-Fat', 'S-Fat', 
+      'Age', 'HR', 'Water %', 'Bone Mass %', 'Protien %',
+      'Fat Free Weight', 'Bone Mass LB', 'BMR', 'Muscle Mass'
+    ];
+
+    // Create CSV content with headers only
+    const csvContent = headers.join(',') + '\n';
+
+    // Set response headers
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=weight-data-template.csv');
+    
+    // Send the CSV file
+    res.status(200).send(csvContent);
+  } catch (error) {
+    console.error('Error creating template:', error);
+    res.status(500).json({
+      error: 'Error creating template',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
+/**
+ * Clear all weight data
+ * @route DELETE /api/weight/all
+ */
+export const clearAllWeightData = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Delete all records
+    const result = await WeightData.deleteMany({});
+    
+    res.status(200).json({
+      message: 'All weight data cleared successfully',
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    console.error('Error clearing weight data:', error);
+    res.status(500).json({
+      error: 'Error clearing weight data',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
 };

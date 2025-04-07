@@ -1,57 +1,62 @@
 // src/components/weight/DataManagement.tsx
 import React, { useState } from 'react';
 import { useConfirmation } from '../../contexts/ConfirmationContext';
+import { weightApi } from '../../services/api';
 
 interface DataManagementProps {
-  onExport: () => Promise<void>;
-  onDownloadTemplate: () => Promise<void>;
-  onClearData: () => Promise<boolean>;
-  loading: boolean;
+  onDataChange?: () => void;  // Callback to notify parent component of data changes
 }
 
 export const DataManagement: React.FC<DataManagementProps> = ({
-  onExport,
-  onDownloadTemplate,
-  onClearData,
-  loading
+  onDataChange
 }) => {
   const { confirm } = useConfirmation();
+  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Reset status messages
+  const resetStatus = () => {
+    setError(null);
+    setSuccess(null);
+  };
 
   // Handle export
   const handleExport = async () => {
     try {
-      setError(null);
-      setSuccess(null);
+      resetStatus();
+      setLoading(true);
       
-      await onExport();
+      await weightApi.exportWeightData();
       setSuccess('Data exported successfully. Check your downloads folder.');
     } catch (err) {
       console.error('Export error:', err);
       setError('Failed to export data. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   // Handle template download
   const handleDownloadTemplate = async () => {
     try {
-      setError(null);
-      setSuccess(null);
+      resetStatus();
+      setLoading(true);
       
-      await onDownloadTemplate();
+      await weightApi.downloadWeightDataTemplate();
       setSuccess('Template downloaded successfully. Check your downloads folder.');
     } catch (err) {
       console.error('Template download error:', err);
       setError('Failed to download template. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   // Handle clear data with confirmation
   const handleClearData = async () => {
     try {
-      setError(null);
-      setSuccess(null);
+      resetStatus();
       
       const confirmed = await confirm({
         title: 'Clear All Data',
@@ -62,16 +67,20 @@ export const DataManagement: React.FC<DataManagementProps> = ({
       });
       
       if (confirmed) {
-        const result = await onClearData();
-        if (result) {
-          setSuccess('All data has been cleared successfully.');
-        } else {
-          setError('Failed to clear data. Please try again.');
+        setLoading(true);
+        await weightApi.clearAllWeightData();
+        setSuccess('All data has been cleared successfully.');
+        
+        // Notify parent component if callback provided
+        if (onDataChange) {
+          onDataChange();
         }
       }
     } catch (err) {
       console.error('Clear data error:', err);
       setError('An error occurred while clearing data.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -101,7 +110,7 @@ export const DataManagement: React.FC<DataManagementProps> = ({
           <button
             onClick={handleExport}
             disabled={loading}
-            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-md"
+            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Exporting...' : 'Export CSV'}
           </button>
@@ -116,7 +125,7 @@ export const DataManagement: React.FC<DataManagementProps> = ({
           <button
             onClick={handleDownloadTemplate}
             disabled={loading}
-            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-md"
+            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Downloading...' : 'Download Template'}
           </button>
@@ -131,7 +140,7 @@ export const DataManagement: React.FC<DataManagementProps> = ({
           <button
             onClick={handleClearData}
             disabled={loading}
-            className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white rounded-md"
+            className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Processing...' : 'Clear All Data'}
           </button>
