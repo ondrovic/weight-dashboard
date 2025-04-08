@@ -110,7 +110,7 @@ export const DataManagement: React.FC<DataManagementProps> = ({
         <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-sm">
           <h3 className="text-lg font-medium mb-3 text-gray-800 dark:text-gray-200">Export Data</h3>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Download all your weight tracking data as a CSV file.
+            Download your data as a CSV file.
           </p>
           <button
             onClick={handleExport}
@@ -125,7 +125,7 @@ export const DataManagement: React.FC<DataManagementProps> = ({
         <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-sm">
           <h3 className="text-lg font-medium mb-3 text-gray-800 dark:text-gray-200">Download Template</h3>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Get a CSV template with the correct headers that you can fill in and upload later.
+            Get a CSV template.
           </p>
           <button
             onClick={handleDownloadTemplate}
@@ -140,7 +140,7 @@ export const DataManagement: React.FC<DataManagementProps> = ({
         <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-sm">
           <h3 className="text-lg font-medium mb-3 text-gray-800 dark:text-gray-200">Clear All Data</h3>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Delete all your weight tracking data. This action cannot be undone.
+            Delete all your data. <strong>This action cannot be undone.</strong>
           </p>
           <button
             onClick={handleClearData}
