@@ -1,7 +1,5 @@
 // frontend/src/components/common/Header.tsx
 import React from 'react';
-import { HeaderSettings } from './HeaderSettings';
-import { DarkModeToggle } from './DarkModeToggle';
 
 export const Header: React.FC = () => {
   return (
@@ -12,12 +10,6 @@ export const Header: React.FC = () => {
             <div className="flex-shrink-0 flex items-center">
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">Body Stats Dashboard</h1>
             </div>
-          </div>
-          
-          {/* Add settings and dark mode buttons */}
-          <div className="flex items-center space-x-2">
-            <DarkModeToggle />
-            <HeaderSettings />
           </div>
         </div>
       </div>
