@@ -16,23 +16,7 @@ const router = Router();
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 userId:
- *                   type: string
- *                 displayName:
- *                   type: string
- *                 tableMetrics:
- *                   type: array
- *                   items:
- *                     type: string
- *                 chartMetrics:
- *                   type: array
- *                   items:
- *                     type: string
- *                 goalWeight:
- *                   type: number
- *                   nullable: true
+ *               $ref: '#/components/schemas/UserSettings'
  *       500:
  *         description: Server error
  */
@@ -55,36 +39,31 @@ router.get('/', getSettings);
  *                 type: array
  *                 items:
  *                   type: string
+ *                 description: List of metrics to display in the table view
  *               chartMetrics:
  *                 type: array
  *                 items:
  *                   type: string
+ *                 description: List of metrics to be available in the chart view
+ *               defaultVisibleMetrics:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: List of metrics visible by default in the chart
  *               goalWeight:
  *                 type: number
  *                 nullable: true
+ *                 description: Target weight goal for the user
+ *               darkMode:
+ *                 type: boolean
+ *                 description: Whether dark mode is enabled
  *     responses:
  *       200:
  *         description: Settings updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 userId:
- *                   type: string
- *                 displayName:
- *                   type: string
- *                 tableMetrics:
- *                   type: array
- *                   items:
- *                     type: string
- *                 chartMetrics:
- *                   type: array
- *                   items:
- *                     type: string
- *                 goalWeight:
- *                   type: number
- *                   nullable: true
+ *               $ref: '#/components/schemas/UserSettings'
  *       500:
  *         description: Server error
  */
@@ -102,23 +81,7 @@ router.put('/', updateSettings);
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 userId:
- *                   type: string
- *                 displayName:
- *                   type: string
- *                 tableMetrics:
- *                   type: array
- *                   items:
- *                     type: string
- *                 chartMetrics:
- *                   type: array
- *                   items:
- *                     type: string
- *                 goalWeight:
- *                   type: number
- *                   nullable: true
+ *               $ref: '#/components/schemas/UserSettings'
  *       500:
  *         description: Server error
  */

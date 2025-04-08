@@ -7,6 +7,7 @@ export interface IUserSettings extends Document {
   displayName: string;
   tableMetrics: string[];
   chartMetrics: string[];
+  defaultVisibleMetrics: string[];  // Added this field based on frontend code
   goalWeight: number | null;
   darkMode: boolean;
   createdAt: Date;
@@ -33,6 +34,10 @@ const UserSettingsSchema: Schema = new Schema(
     chartMetrics: {
       type: [String],
       default: ['Weight', 'BMI', 'Body Fat %', 'V-Fat', 'S-Fat', 'Water %', 'BMR']
+    },
+    defaultVisibleMetrics: {
+      type: [String],
+      default: ['Weight']  // Default to only showing weight in charts
     },
     goalWeight: {
       type: Number,

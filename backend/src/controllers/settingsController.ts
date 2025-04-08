@@ -8,7 +8,8 @@ const DEFAULT_USER_ID = 'default';
 // Default metrics values
 const DEFAULT_TABLE_METRICS = ['Date', 'Weight', 'BMI', 'Body Fat %', 'V-Fat', 'S-Fat', 'Water %', 'BMR'];
 const DEFAULT_CHART_METRICS = ['Weight', 'BMI', 'Body Fat %', 'V-Fat', 'S-Fat', 'Water %', 'BMR'];
-const DEFAULT_GOAL_WEIGHT = 300; // Example goal weight
+const DEFAULT_VISIBLE_METRICS = ['Weight']; // Default to only showing Weight
+const DEFAULT_GOAL_WEIGHT = null; // Default to no goal weight
 const DEFAULT_DARK_MODE = false; // Default to light mode
 
 /**
@@ -30,6 +31,7 @@ export const getSettings = async (req: Request, res: Response): Promise<void> =>
         displayName: 'Default User',
         tableMetrics: DEFAULT_TABLE_METRICS,
         chartMetrics: DEFAULT_CHART_METRICS,
+        defaultVisibleMetrics: DEFAULT_VISIBLE_METRICS,
         goalWeight: DEFAULT_GOAL_WEIGHT,
         darkMode: DEFAULT_DARK_MODE
       });
@@ -54,7 +56,13 @@ export const updateSettings = async (req: Request, res: Response): Promise<void>
     // In a real app, we would get the user ID from authentication
     const userId = DEFAULT_USER_ID;
     
-    const { tableMetrics, chartMetrics, goalWeight, darkMode } = req.body;
+    const { 
+      tableMetrics, 
+      chartMetrics, 
+      defaultVisibleMetrics,
+      goalWeight, 
+      darkMode 
+    } = req.body;
     
     // Find user settings or create if doesn't exist
     let userSettings = await UserSettings.findOne({ userId });
@@ -66,6 +74,7 @@ export const updateSettings = async (req: Request, res: Response): Promise<void>
         displayName: 'Default User',
         tableMetrics: DEFAULT_TABLE_METRICS,
         chartMetrics: DEFAULT_CHART_METRICS,
+        defaultVisibleMetrics: DEFAULT_VISIBLE_METRICS,
         goalWeight: DEFAULT_GOAL_WEIGHT,
         darkMode: DEFAULT_DARK_MODE
       });
@@ -83,6 +92,10 @@ export const updateSettings = async (req: Request, res: Response): Promise<void>
     
     if (chartMetrics !== undefined && Array.isArray(chartMetrics)) {
       userSettings.chartMetrics = chartMetrics;
+    }
+    
+    if (defaultVisibleMetrics !== undefined && Array.isArray(defaultVisibleMetrics)) {
+      userSettings.defaultVisibleMetrics = defaultVisibleMetrics;
     }
     
     if (goalWeight !== undefined) {
@@ -125,6 +138,7 @@ export const resetSettings = async (req: Request, res: Response): Promise<void> 
         displayName: 'Default User',
         tableMetrics: DEFAULT_TABLE_METRICS,
         chartMetrics: DEFAULT_CHART_METRICS,
+        defaultVisibleMetrics: DEFAULT_VISIBLE_METRICS,
         goalWeight: DEFAULT_GOAL_WEIGHT,
         darkMode: DEFAULT_DARK_MODE
       });
@@ -132,6 +146,7 @@ export const resetSettings = async (req: Request, res: Response): Promise<void> 
       // Reset to defaults
       userSettings.tableMetrics = DEFAULT_TABLE_METRICS;
       userSettings.chartMetrics = DEFAULT_CHART_METRICS;
+      userSettings.defaultVisibleMetrics = DEFAULT_VISIBLE_METRICS;
       userSettings.goalWeight = DEFAULT_GOAL_WEIGHT;
       // Don't reset darkMode to maintain user preference
       
