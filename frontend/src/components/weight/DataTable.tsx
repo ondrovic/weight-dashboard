@@ -4,7 +4,7 @@ import { WeightEntry } from '../../types/weightData';
 import { formatValue } from '../../utils/calculations';
 import { EditButton } from './EditButton';
 import { DeleteButton } from './DeleteButton';
-import { EditWeightForm } from './EditWeightForm';
+import { WeightDataForm } from './WeightDataForm';
 import { useMetrics } from '../../contexts/MetricsContext';
 
 // Type for sort direction
@@ -146,10 +146,17 @@ export const DataTable: React.FC<DataTableProps> = ({
     setEditingRecord(record);
   };
 
-  // Handle edit cancel
-  const handleEditCancel = () => {
-    setEditingRecordId(null);
-    setEditingRecord(null);
+  // Handle update completion
+  const handleUpdateComplete = async (data: Partial<WeightEntry>): Promise<boolean> => {
+    if (onUpdateRecord && editingRecordId) {
+      const success = await onUpdateRecord(editingRecordId, data);
+      if (success) {
+        setEditingRecordId(null);
+        setEditingRecord(null);
+      }
+      return success;
+    }
+    return false;
   };
 
   // Handle delete click
@@ -165,12 +172,16 @@ export const DataTable: React.FC<DataTableProps> = ({
   // If in edit mode, show edit form
   if (editingRecordId && editingRecord && onUpdateRecord) {
     return (
-      <EditWeightForm
-        recordId={editingRecordId}
+      <WeightDataForm
+        onSubmit={handleUpdateComplete}
+        onCancel={() => {
+          setEditingRecordId(null);
+          setEditingRecord(null);
+        }}
         initialData={editingRecord}
-        onUpdate={onUpdateRecord}
-        onCancel={handleEditCancel}
+        recordId={editingRecordId}
         loading={loading}
+        isEditMode={true}
       />
     );
   }

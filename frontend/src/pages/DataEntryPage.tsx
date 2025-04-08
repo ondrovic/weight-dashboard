@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useWeightData } from '../hooks/useWeightData';
 import { DataTable } from '../components/weight/DataTable';
-import { WeightEntryForm } from '../components/weight/WeightEntryForm';
+import { WeightDataForm } from '../components/weight/WeightDataForm';
 import { DataUpload } from '../components/weight/DataUpload';
 import { DataManagement } from '../components/weight/DataManagement';
 import { TabsComponent, TabItem } from '../components/common/TabsComponent';
@@ -16,9 +16,6 @@ const DataEntryPage: React.FC = () => {
     createWeightEntry,
     updateWeightData,
     deleteWeightData,
-    exportData,
-    downloadTemplate,
-    clearAllData,
     refreshData 
   } = useWeightData();
 
@@ -84,10 +81,12 @@ const DataEntryPage: React.FC = () => {
         )}
 
         {activeTab === 'add-record' && (
-          <WeightEntryForm 
+          <WeightDataForm 
             onSubmit={createWeightEntry} 
             loading={dataLoading} 
             expandedByDefault={true}
+            isEditMode={false}
+            // No need for onCancel in add mode since there's no cancel button
           />
         )}
 
@@ -100,9 +99,7 @@ const DataEntryPage: React.FC = () => {
 
         {activeTab === 'manage' && (
           <DataManagement 
-            onExport={exportData}
-            onDownloadTemplate={downloadTemplate}
-            onClearData={clearAllData}
+            onDataChange={refreshData}
             loading={dataLoading}
           />
         )}

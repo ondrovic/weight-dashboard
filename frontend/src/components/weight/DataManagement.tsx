@@ -5,15 +5,20 @@ import { weightApi } from '../../services/api';
 
 interface DataManagementProps {
   onDataChange?: () => void;  // Callback to notify parent component of data changes
+  loading: boolean;
 }
 
 export const DataManagement: React.FC<DataManagementProps> = ({
-  onDataChange
+  onDataChange,
+  loading
 }) => {
   const { confirm } = useConfirmation();
-  const [loading, setLoading] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Combined loading state
+  const isLoading = loading || localLoading;
 
   // Reset status messages
   const resetStatus = () => {
@@ -25,7 +30,7 @@ export const DataManagement: React.FC<DataManagementProps> = ({
   const handleExport = async () => {
     try {
       resetStatus();
-      setLoading(true);
+      setLocalLoading(true);
       
       await weightApi.exportWeightData();
       setSuccess('Data exported successfully. Check your downloads folder.');
@@ -33,7 +38,7 @@ export const DataManagement: React.FC<DataManagementProps> = ({
       console.error('Export error:', err);
       setError('Failed to export data. Please try again.');
     } finally {
-      setLoading(false);
+      setLocalLoading(false);
     }
   };
 
@@ -41,7 +46,7 @@ export const DataManagement: React.FC<DataManagementProps> = ({
   const handleDownloadTemplate = async () => {
     try {
       resetStatus();
-      setLoading(true);
+      setLocalLoading(true);
       
       await weightApi.downloadWeightDataTemplate();
       setSuccess('Template downloaded successfully. Check your downloads folder.');
@@ -49,7 +54,7 @@ export const DataManagement: React.FC<DataManagementProps> = ({
       console.error('Template download error:', err);
       setError('Failed to download template. Please try again.');
     } finally {
-      setLoading(false);
+      setLocalLoading(false);
     }
   };
 
@@ -67,7 +72,7 @@ export const DataManagement: React.FC<DataManagementProps> = ({
       });
       
       if (confirmed) {
-        setLoading(true);
+        setLocalLoading(true);
         await weightApi.clearAllWeightData();
         setSuccess('All data has been cleared successfully.');
         
@@ -80,7 +85,7 @@ export const DataManagement: React.FC<DataManagementProps> = ({
       console.error('Clear data error:', err);
       setError('An error occurred while clearing data.');
     } finally {
-      setLoading(false);
+      setLocalLoading(false);
     }
   };
 
@@ -109,10 +114,10 @@ export const DataManagement: React.FC<DataManagementProps> = ({
           </p>
           <button
             onClick={handleExport}
-            disabled={loading}
+            disabled={isLoading}
             className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Exporting...' : 'Export CSV'}
+            {isLoading ? 'Exporting...' : 'Export CSV'}
           </button>
         </div>
         
@@ -124,10 +129,10 @@ export const DataManagement: React.FC<DataManagementProps> = ({
           </p>
           <button
             onClick={handleDownloadTemplate}
-            disabled={loading}
+            disabled={isLoading}
             className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Downloading...' : 'Download Template'}
+            {isLoading ? 'Downloading...' : 'Download Template'}
           </button>
         </div>
         
@@ -139,10 +144,10 @@ export const DataManagement: React.FC<DataManagementProps> = ({
           </p>
           <button
             onClick={handleClearData}
-            disabled={loading}
+            disabled={isLoading}
             className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Processing...' : 'Clear All Data'}
+            {isLoading ? 'Processing...' : 'Clear All Data'}
           </button>
         </div>
       </div>
