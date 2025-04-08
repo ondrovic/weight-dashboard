@@ -58,7 +58,7 @@ const WeightDashboardPage: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">About This Dashboard</h2>
         <p className="text-gray-700 dark:text-gray-300">
-          This dashboard displays your weight tracking data over time. The stats cards show a summary of your
+          This dashboard displays your tracking data over time. The stats cards show a summary of your
           current weight metrics, while the chart visualizes your progress. You can toggle different metrics
           in the chart to focus on specific aspects of your health journey.
         </p>

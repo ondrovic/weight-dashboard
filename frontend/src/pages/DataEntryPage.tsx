@@ -58,7 +58,7 @@ const DataEntryPage: React.FC = () => {
       <div className="mb-4">
         <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Data Management</h1>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
-          View, add, import, and manage your weight tracking data.
+          View, add, import, and manage your tracking data.
         </p>
       </div>
 
