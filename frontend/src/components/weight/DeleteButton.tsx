@@ -71,7 +71,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
       {/* Modal Confirmation Dialog */}
       <ConfirmationDialog
         title="Delete Record"
-        message=""
+        message="Are you sure you want to delete this record? This action cannot be undone."
         confirmText="Delete"
         cancelText="Cancel"
         onConfirm={handleConfirm}

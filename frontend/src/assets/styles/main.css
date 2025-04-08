@@ -11,3 +11,8 @@ body {
 .recharts-brush .recharts-text {
   font-size: 10px !important;
 }
+
+.backdrop-blur {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}

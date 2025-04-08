@@ -21,7 +21,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   title = 'Confirm Action'
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
-  
+
   // Close the modal when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -36,12 +36,12 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
         onCancel();
       }
     };
-    
+
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleEscapeKey);
     }
-    
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscapeKey);
@@ -55,7 +55,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
     } else {
       document.body.style.overflow = '';
     }
-    
+
     return () => {
       document.body.style.overflow = '';
     };
@@ -63,36 +63,63 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 
   if (!isOpen) return null;
 
-  // Split the message into paragraphs if not empty, otherwise use default text
+  // Split the message into paragraphs with better sentence detection
+  const splitMessage = (message: string): string[] => {
+    if (!message) return [];
+
+    // First try to split by paragraphs (double newlines)
+    const paragraphs = message.split('\n\n');
+
+    // If we only got one paragraph and it has a period followed by space
+    if (paragraphs.length === 1) {
+      // Use regex to split on period followed by space and capitalize each sentence
+      const sentences = message.match(/[^.!?]+[.!?]+\s*/g) || [];
+
+      if (sentences.length > 1) {
+        return sentences.map((sentence: string) => sentence.trim());
+      }
+    }
+
+    return paragraphs;
+  };
+
+  // Then in your render function
   const messageContent = message ? (
-    message.split('\n\n').map((paragraph, index) => (
+    splitMessage(message).map((paragraph: string, index: number) => (
       <p key={index} className={`text-sm text-gray-500 dark:text-gray-300 ${index > 0 ? 'mt-2' : ''}`}>
         {paragraph}
       </p>
     ))
   ) : (
-    <>
-      <p className="text-sm text-gray-500 dark:text-gray-300">
-        Are you sure you want to delete this record?
-      </p>
-      <p className="text-sm text-gray-500 dark:text-gray-300 mt-2">
-        This action cannot be undone.
-      </p>
-    </>
+    <p className="text-sm text-gray-500 dark:text-gray-300">
+      {/* Default message if none provided */}
+      Are you sure you want to proceed with this action?
+    </p>
   );
+
 
   return (
     <div className="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
       {/* Background overlay */}
-      <div className="fixed inset-0"></div>
+      <div className="fixed inset-0 bg-opacity-50 backdrop-blur transition-opacity"></div>
 
       <div className="fixed inset-0 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
           {/* Modal panel */}
-          <div 
+          <div
             ref={modalRef}
-            className="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
+            className="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-gray-300 dark:border-gray-600"
+            style={{
+              boxShadow: '0 0 15px rgba(255, 255, 255, 0.1)', // Add glow effect in dark mode
+            }}
           >
+            {/* Modal Header - Add a distinct header background */}
+            <div className="bg-gray-100 dark:bg-gray-700 px-4 py-3 border-b border-gray-200 dark:border-gray-600">
+              <h3 className="text-lg font-semibold leading-6 text-gray-900 dark:text-white" id="modal-title">
+                {title}
+              </h3>
+            </div>
+
             <div className="bg-white dark:bg-gray-800 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
               <div className="sm:flex sm:items-start">
                 <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
@@ -101,26 +128,24 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
                   </svg>
                 </div>
                 <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                  <h3 className="text-base font-semibold leading-6 text-gray-900 dark:text-white" id="modal-title">
-                    {title}
-                  </h3>
                   <div className="mt-2">
                     {messageContent}
                   </div>
                 </div>
               </div>
             </div>
-            <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+
+            <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 border-t border-gray-200 dark:border-gray-600">
               <button
                 type="button"
-                className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
+                className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto transition-colors duration-200"
                 onClick={onConfirm}
               >
                 {confirmText}
               </button>
               <button
                 type="button"
-                className="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 sm:mt-0 sm:w-auto"
+                className="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 sm:mt-0 sm:w-auto transition-colors duration-200"
                 onClick={onCancel}
               >
                 {cancelText}
