@@ -35,19 +35,42 @@ export const weightApi = {
     }
   },
 
+
   /**
-   * Get weight statistics
-   */
+  * Get weight statistics
+  */
   async getWeightStats(): Promise<WeightStats> {
     try {
       const response = await axios.get(`${API_BASE_URL}/weight/stats`);
 
-      // If the response already matches our expected format, return it
-      if (response.data &&
-        response.data.count !== undefined &&
-        response.data.latest &&
-        response.data.oldest &&
-        response.data.stats) {
+      if (response.data && response.data.count !== undefined) {
+        // The backend returns count, latest, oldest, but not the stats object
+        // Let's create it from the latest data
+        if (!response.data.stats && response.data.latest) {
+          // Create stats object from the latest and oldest entries
+          const statsObj: Record<string, { min: number; max: number; avg: number }> = {};
+
+          // Get all numerical properties from latest entry
+          Object.entries(response.data.latest).forEach(([key, value]) => {
+            if (typeof value === 'number' && key !== 'id') {
+              // Initialize with values from latest entry
+              statsObj[key] = {
+                min: response.data.oldest?.[key] ?? value,
+                max: value,
+                avg: ((response.data.oldest?.[key] ?? value) + value) / 2
+              };
+
+              // Ensure min is actually the minimum value
+              if (statsObj[key].min > statsObj[key].max) {
+                [statsObj[key].min, statsObj[key].max] = [statsObj[key].max, statsObj[key].min];
+              }
+            }
+          });
+
+          // Add the stats object to the response
+          response.data.stats = statsObj;
+        }
+
         return response.data as WeightStats;
       }
 
@@ -175,27 +198,27 @@ export const weightApi = {
       const response = await axios.get(`${API_BASE_URL}/weight/export`, {
         responseType: 'blob' // Important - this tells axios to handle the response as a file
       });
-      
+
       // Create a URL for the blob and trigger download
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      
+
       // Get filename from content-disposition header or use a default
       const contentDisposition = response.headers['content-disposition'];
       let filename = 'weight-data-export.csv';
-      
+
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
         if (filenameMatch && filenameMatch.length === 2) {
           filename = filenameMatch[1];
         }
       }
-      
+
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       link.remove();
       window.URL.revokeObjectURL(url);
@@ -204,7 +227,7 @@ export const weightApi = {
       throw error;
     }
   },
-  
+
   /**
    * Download a CSV template with the correct headers
    */
@@ -214,27 +237,27 @@ export const weightApi = {
       const response = await axios.get(`${API_BASE_URL}/weight/template`, {
         responseType: 'blob'
       });
-      
+
       // Create a URL for the blob and trigger download
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      
+
       // Get filename from content-disposition header or use a default
       const contentDisposition = response.headers['content-disposition'];
       let filename = 'weight-data-template.csv';
-      
+
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
         if (filenameMatch && filenameMatch.length === 2) {
           filename = filenameMatch[1];
         }
       }
-      
+
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       link.remove();
       window.URL.revokeObjectURL(url);
@@ -243,7 +266,7 @@ export const weightApi = {
       throw error;
     }
   },
-  
+
   /**
    * Clear all weight data
    */
@@ -273,7 +296,7 @@ export const settingsApi = {
       throw error;
     }
   },
-  
+
   /**
    * Update user settings
    */
@@ -286,42 +309,42 @@ export const settingsApi = {
       throw error;
     }
   },
-  
+
   /**
    * Update table metrics
    */
   async updateTableMetrics(tableMetrics: string[]): Promise<any> {
     return this.updateSettings({ tableMetrics });
   },
-  
+
   /**
    * Update chart metrics
    */
   async updateChartMetrics(chartMetrics: string[]): Promise<any> {
     return this.updateSettings({ chartMetrics });
   },
-  
+
   /**
    * Update default visible metrics
    */
   async updateDefaultVisibleMetrics(defaultVisibleMetrics: string[]): Promise<any> {
     return this.updateSettings({ defaultVisibleMetrics });
   },
-  
+
   /**
    * Update goal weight
    */
   async updateGoalWeight(goalWeight: number | null): Promise<any> {
     return this.updateSettings({ goalWeight });
   },
-  
+
   /**
    * Update dark mode setting
    */
   async updateDarkMode(darkMode: boolean): Promise<any> {
     return this.updateSettings({ darkMode });
   },
-  
+
   /**
    * Reset settings to defaults
    */
