@@ -63,7 +63,6 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
 
   // Function to apply dark mode to the HTML element
   const applyDarkMode = (isDarkMode: boolean) => {
-    console.log(`Applying dark mode: ${isDarkMode}`);
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
