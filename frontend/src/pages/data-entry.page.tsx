@@ -1,6 +1,6 @@
 // src/pages/DataEntryPage.tsx
 import React, { useState } from 'react';
-import { useWeightData } from '@/hooks/use-weight-data';
+import { useWeightData } from '@/hooks/use-weight-data.hook';
 import { DataTable } from '@/components/weight/data-table.component';
 import { WeightDataForm } from '@/components/weight/weight-data-form.component';
 import { DataUpload } from '@/components/weight/data-upload.component';
@@ -8,15 +8,15 @@ import { DataManagement } from '@/components/weight/data-management.component';
 import { TabsComponent, TabItem } from '@/components/common/tabs.component';
 
 export const DataEntryPage: React.FC = () => {
-  const { 
+  const {
     data,
-    loading: dataLoading, 
-    error: dataError, 
+    loading: dataLoading,
+    error: dataError,
     uploadData,
     createWeightEntry,
     updateWeightData,
     deleteWeightData,
-    refreshData 
+    refreshData
   } = useWeightData();
 
   // Handle record update
@@ -54,7 +54,7 @@ export const DataEntryPage: React.FC = () => {
           </button>
         </div>
       )}
-      
+
       <div className="mb-4">
         <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Data Management</h1>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -63,42 +63,42 @@ export const DataEntryPage: React.FC = () => {
       </div>
 
       {/* Tabs Component */}
-      <TabsComponent 
-        tabs={tabs} 
-        activeTab={activeTab} 
-        onTabChange={setActiveTab} 
+      <TabsComponent
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
       />
 
       {/* Tab Content */}
       <div className="mt-4">
         {activeTab === 'data' && (
-          <DataTable 
-            data={data} 
-            loading={dataLoading} 
+          <DataTable
+            data={data}
+            loading={dataLoading}
             onUpdateRecord={handleUpdateRecord}
             onDeleteRecord={handleDeleteRecord}
           />
         )}
 
         {activeTab === 'add-record' && (
-          <WeightDataForm 
-            onSubmit={createWeightEntry} 
-            loading={dataLoading} 
+          <WeightDataForm
+            onSubmit={createWeightEntry}
+            loading={dataLoading}
             expandedByDefault={true}
             isEditMode={false}
-            // No need for onCancel in add mode since there's no cancel button
+          // No need for onCancel in add mode since there's no cancel button
           />
         )}
 
         {activeTab === 'upload' && (
-          <DataUpload 
-            uploadData={uploadData} 
-            loading={dataLoading} 
+          <DataUpload
+            uploadData={uploadData}
+            loading={dataLoading}
           />
         )}
 
         {activeTab === 'manage' && (
-          <DataManagement 
+          <DataManagement
             onDataChange={refreshData}
             loading={dataLoading}
           />

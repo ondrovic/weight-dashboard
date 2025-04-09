@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDashboard } from '@/hooks/use-dashboard';
+import { useDashboard } from '@/hooks/use-dashboard.hook';
 import { WeightChart } from '@/components/weight/weight-chart.component';
 import { StatsCard } from '@/components/weight/stats-card.component';
 import { WeightMetricsCard } from '@/components/weight/weight-metrics-card.component';
