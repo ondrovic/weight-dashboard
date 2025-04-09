@@ -40,9 +40,10 @@ function Show-Menu {
     Write-Host "==============================================="
     Write-Host "1. Start all services"
     Write-Host "2. Stop all services"
-    Write-Host "3. Rebuild and restart all services"
-    Write-Host "4. View logs"
-    Write-Host "5. Exit"
+    Write-Host "3. Restart all services"
+    Write-Host "4. Rebuild and restart all services"
+    Write-Host "5. View logs"
+    Write-Host "6. Exit"
     Write-Host "==============================================="
     
     $choice = Read-Host "Enter your choice [1-5]"
@@ -50,9 +51,10 @@ function Show-Menu {
     switch ($choice) {
         1 { Start-Services }
         2 { Stop-Services }
-        3 { Rebuild-Services }
-        4 { View-Logs }
-        5 { exit 0 }
+        3 { Restart-Services }
+        4 { Rebuild-Services }
+        5 { View-Logs }
+        6 { exit 0 }
         default { 
             Write-Host "Invalid option. Please try again."
             Start-Sleep -Seconds 2
@@ -69,6 +71,18 @@ function Start-Services {
     # Get UI_PORT from .env file
     $uiPort = (Get-Content .env | Where-Object { $_ -match "UI_PORT" } | ForEach-Object { $_.Split('=')[1] })
     Write-Host "Services started. Access the application at http://localhost:$uiPort"
+    
+    Pause-Script
+    Show-Menu
+}
+
+function Restart-Services {
+    Write-Host "Restarting services..."
+    docker compose restart
+    
+    # Get UI_PORT from .env file
+    $uiPort = (Get-Content .env | Where-Object { $_ -match "UI_PORT" } | ForEach-Object { $_.Split('=')[1] })
+    Write-Host "Services restarted. Access the application at http://localhost:$uiPort"
     
     Pause-Script
     Show-Menu

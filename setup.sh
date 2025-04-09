@@ -31,18 +31,20 @@ show_menu() {
   echo "==============================================="
   echo "1. Start all services"
   echo "2. Stop all services"
-  echo "3. Rebuild and restart all services"
-  echo "4. View logs"
-  echo "5. Exit"
+  echo "3. Restart all services"
+  echo "4. Rebuild and restart all services"
+  echo "5. View logs"
+  echo "6. Exit"
   echo "==============================================="
   read -p "Enter your choice [1-5]: " choice
 
   case $choice in
     1) start_services ;;
     2) stop_services ;;
-    3) rebuild_services ;;
-    4) view_logs ;;
-    5) exit 0 ;;
+    3) restart_services ;;
+    4) rebuild_services ;;
+    5) view_logs ;;
+    6) exit 0 ;;
     *) echo "Invalid option. Please try again." && show_menu ;;
   esac
 }
@@ -51,6 +53,13 @@ start_services() {
   echo "Starting services..."
   docker-compose up -d
   echo "Services started. Access the application at http://localhost:$(grep UI_PORT .env | cut -d= -f2)"
+  show_menu
+}
+
+restart_services() {
+  echo "Starting services..."
+  docker-compose restart
+  echo "Services restarted. Access the application at http://localhost:$(grep UI_PORT .env | cut -d= -f2)"
   show_menu
 }
 
