@@ -1,3 +1,4 @@
+// backend/src/services/conversion.service.ts
 import { RawWeightData, ProcessedWeightData } from '../types/api/weight-data.types';
 import { parseDate, formatDateMMDDYY, isValidDate } from '../utils/date.util';
 import { extractNumber } from '../utils/number.util';
@@ -31,7 +32,6 @@ export class ConversionService {
 
     return normalized;
   }
-
   private static patchRawFromProcessed(record: RawWeightData): RawWeightData {
     // Fix for already-processed CSV headers like "Date" instead of "Time"
     if (record.Date && !record.Time) {
@@ -45,7 +45,9 @@ export class ConversionService {
       'V-Fat': 'Visceral Fat',
       'Water %': 'Body Water',
       'Bone Mass %': 'Bone Mass', // this one gets recalculated anyway
-      'Protien %': 'Protein'
+      'Protien %': 'Protein',
+      'Age': 'Metabolic Age',
+      'HR': 'Heart Rate'
     };
 
     for (const key in reverseMap) {
@@ -54,17 +56,37 @@ export class ConversionService {
       }
     }
 
+    // Ensure any missing fields have default values
+    const defaultFields = {
+      'Body Fat': '0',
+      'Fat-Free Body Weight': '0',
+      'Subcutaneous Fat': '0',
+      'Visceral Fat': '0',
+      'Body Water': '0',
+      'Muscle Mass': '0',
+      'Bone Mass': '0',
+      'Protein': '0',
+      'BMR': '0',
+      'Metabolic Age': '0',
+      'Heart Rate': '0',
+      'Weight': '0',
+      'BMI': '0'
+    };
+
+    for (const [key, value] of Object.entries(defaultFields)) {
+      if (!record[key as keyof RawWeightData]) {
+        record[key as keyof RawWeightData] = value;
+      }
+    }
+
     return record;
   }
 
+  // Update the isCompleteRecord method
   private static isCompleteRecord(record: RawWeightData): boolean {
     if (!record.Time) return false;
-    const requiredFields: (keyof RawWeightData)[] = [
-      'Body Fat', 'Fat-Free Body Weight', 'Subcutaneous Fat', 'Visceral Fat',
-      'Body Water', 'Muscle Mass', 'Bone Mass', 'Protein', 'BMR',
-      'Metabolic Age', 'Heart Rate', 'Weight', 'BMI'
-    ];
-    return !requiredFields.some(field => !record[field] || record[field] === '--');
+    // Only require a valid date/time field for basic validation
+    return parseDate(record.Time) !== null;
   }
 
   private static groupByDate(records: RawWeightData[]): Record<string, RawWeightData> {

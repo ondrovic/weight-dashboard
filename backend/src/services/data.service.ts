@@ -60,25 +60,29 @@ export class DataService {
 
   private filterIncompleteRawRecords(records: RawWeightData[]): RawWeightData[] {
     return records.filter(record => {
+      // At minimum we need a date/time field
       if (!record.Time) return false;
-      const missing = [
-        'Body Fat', 'Fat-Free Body Weight', 'Subcutaneous Fat',
-        'Visceral Fat', 'Body Water', 'Muscle Mass', 'Bone Mass',
-        'Protein', 'BMR', 'Metabolic Age', 'Heart Rate'
-      ].filter(field => !record[field] || record[field] === '--').length;
-
-      return missing <= 3;
+      
+      // Validate the date format
+      const date = parseDate(record.Time);
+      if (!date) return false;
+      
+      // Check for essential fields - weight is minimum required
+      return record.Weight && record.Weight !== '--';
     });
   }
-
+  
   private filterIncompleteProcessedRecords(records: any[]): ProcessedWeightData[] {
     return records.filter(record => {
+      // At minimum we need a date and weight
       if (!record.Date) return false;
-      const fields = ['Weight', 'BMI', 'Body Fat %', 'V-Fat', 'S-Fat', 'Age', 'HR', 'Water %'];
-      const missing = fields.filter(field => record[field] === '--' || record[field] === '').length;
-      const zeros = fields.filter(field => record[field] === 0 || record[field] === '0').length;
-
-      return missing <= 3 && (missing + zeros) <= 5;
+      
+      // Validate the date format
+      const date = parseDate(record.Date);
+      if (!date) return false;
+      
+      // Ensure weight is present and valid
+      return record.Weight && record.Weight !== '--' && record.Weight !== '';
     });
   }
 
@@ -121,23 +125,48 @@ export class DataService {
 
   private async saveToDatabase(records: ProcessedWeightData[]): Promise<ProcessedWeightData[]> {
     const saved: ProcessedWeightData[] = [];
-
+  
     for (const record of records) {
       const date = parseDate(record.Date);
       if (!date) continue;
-
-      const existing = await WeightData.findOne({ date });
-      const doc = { date, ...record };
-
-      if (existing) {
-        await WeightData.updateOne({ _id: existing._id }, doc);
-        saved.push({ ...record, id: existing._id.toString() });
-      } else {
-        const newDoc = await WeightData.create(doc);
-        saved.push({ ...record, id: newDoc._id.toString() });
+  
+      // Convert the processed record to DB format with all required fields
+      const dbRecord = {
+        date,
+        weight: record.Weight || 0,
+        bmi: record.BMI || 0,
+        bodyFatPercentage: record['Body Fat %'] || 0,
+        visceralFat: record['V-Fat'] || 0,
+        subcutaneousFat: record['S-Fat'] || 0,
+        metabolicAge: record.Age || 0,
+        heartRate: record.HR || 0,
+        waterPercentage: record['Water %'] || 0,
+        boneMassPercentage: record['Bone Mass %'] || 0,
+        proteinPercentage: record['Protien %'] || 0,
+        fatFreeWeight: record['Fat Free Weight'] || 0,
+        boneMassLb: record['Bone Mass LB'] || 0,
+        bmr: record.BMR || 0,
+        muscleMass: record['Muscle Mass'] || 0
+      };
+  
+      try {
+        const existing = await WeightData.findOne({ date });
+        
+        if (existing) {
+          // Update existing record with the new values
+          await WeightData.updateOne({ _id: existing._id }, dbRecord);
+          saved.push({ ...record, id: existing._id.toString() });
+        } else {
+          // Create new record
+          const newDoc = await WeightData.create(dbRecord);
+          saved.push({ ...record, id: newDoc._id.toString() });
+        }
+      } catch (error) {
+        console.error(`Error saving record for date ${date}:`, error);
+        // Continue processing other records
       }
     }
-
+  
     return saved;
   }
 }

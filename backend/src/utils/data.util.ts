@@ -60,5 +60,22 @@ export const convertToDbFieldNames = (data: Record<string, unknown>): Partial<Pr
     }
   });
 
+  // Ensure all required fields have at least a default value
+  if (!dbData.date) dbData.date = new Date();
+  if (!dbData.weight) dbData.weight = 0;
+  if (!dbData.bmi) dbData.bmi = 0;
+  if (!dbData.bodyFatPercentage) dbData.bodyFatPercentage = 0;
+  if (!dbData.visceralFat) dbData.visceralFat = 0;
+  if (!dbData.subcutaneousFat) dbData.subcutaneousFat = 0;
+  if (!dbData.metabolicAge) dbData.metabolicAge = 0;
+  if (!dbData.heartRate) dbData.heartRate = 0;
+  if (!dbData.waterPercentage) dbData.waterPercentage = 0;
+  if (!dbData.boneMassPercentage) dbData.boneMassPercentage = 0;
+  if (!dbData.proteinPercentage) dbData.proteinPercentage = 0;
+  if (!dbData.fatFreeWeight) dbData.fatFreeWeight = 0;
+  if (!dbData.boneMassLb) dbData.boneMassLb = 0;
+  if (!dbData.bmr) dbData.bmr = 0;
+  if (!dbData.muscleMass) dbData.muscleMass = 0;
+
   return dbData as Partial<ProcessedWeightData>;
 };

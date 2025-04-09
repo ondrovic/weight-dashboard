@@ -39,27 +39,6 @@ export const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-export const uploadWeightData = async (req: Request, res: Response): Promise<void> => {
-  if (!req.file) {
-    res.status(400).json({ error: 'No file uploaded' });
-    return;
-  }
-
-  try {
-    const filePath = req.file.path;
-    const processedData = await dataService.processData(filePath);
-
-    res.status(200).json({
-      message: 'Data processed successfully',
-      count: processedData.length,
-      preview: processedData.slice(0, 5)
-    });
-  } catch (error) {
-    if (req.file?.path) await fs.promises.unlink(req.file.path);
-    res.status(500).json({ error: 'Error processing data', message: (error as Error).message });
-  }
-};
-
 export const getWeightData = async (_req: Request, res: Response): Promise<void> => {
   try {
     const data = await dataService.getProcessedData();
@@ -131,6 +110,52 @@ export const clearAllWeightData = async (_req: Request, res: Response): Promise<
   }
 };
 
+export const uploadWeightData = async (req: Request, res: Response): Promise<void> => {
+  if (!req.file) {
+    res.status(400).json({ error: 'No file uploaded' });
+    return;
+  }
+
+  try {
+    const filePath = req.file.path;
+
+    // Start a try/catch block for the data processing
+    try {
+      const processedData = await dataService.processData(filePath);
+
+      res.status(200).json({
+        message: 'Data processed successfully',
+        count: processedData.length,
+        preview: processedData.slice(0, 5)
+      });
+    } catch (error) {
+      console.error('Error during data processing:', error);
+
+      // Send a more detailed error response
+      res.status(500).json({
+        error: 'Error processing data',
+        message: (error as Error).message,
+        details: 'Failed to process the uploaded CSV file. Please ensure it matches one of the expected formats.',
+        stack: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined
+      });
+    }
+  } catch (error) {
+    // Handle file system errors
+    if (req.file?.path) {
+      try {
+        await fs.promises.unlink(req.file.path);
+      } catch (unlinkError) {
+        console.error('Failed to delete uploaded file:', unlinkError);
+      }
+    }
+
+    res.status(500).json({
+      error: 'Server error',
+      message: (error as Error).message
+    });
+  }
+};
+
 export const updateWeightData = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const errors = validateUpdateData(req.body);
@@ -185,9 +210,17 @@ export const getAllWeightIds = async (_req: Request, res: Response): Promise<voi
 
 export const createWeightEntry = async (req: Request, res: Response): Promise<void> => {
   try {
-    const newRecord = await WeightData.create(convertToDbFieldNames(req.body));
+    const errors = validateUpdateData(req.body);
+    if (errors.length) {
+      res.status(400).json({ error: 'Invalid request data', validationErrors: errors });
+      return;
+    }
+
+    const dbData = convertToDbFieldNames(req.body);
+    const newRecord = await WeightData.create(dbData);
     res.status(201).json(newRecord);
   } catch (error) {
+    console.error('Error creating entry:', error);
     res.status(500).json({ error: 'Error creating entry', message: (error as Error).message });
   }
 };
