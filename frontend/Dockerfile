@@ -2,6 +2,14 @@ FROM node:20-alpine as build
 
 WORKDIR /app
 
+# Accept build arguments from docker-compose
+ARG VITE_API_URL
+ARG VITE_API_ENDPOINT
+
+# Set environment variables for build
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_API_ENDPOINT=$VITE_API_ENDPOINT
+
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
