@@ -1,8 +1,12 @@
 // src/contexts/MetricsContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Metric } from '../components/common/metric-selector.component';
-import { settingsApi } from '../services/settings.service';
-
+import { Metric } from '@/components/common/metric-selector.component';
+import { settingsApi } from '@/services/settings.service';
+import {
+  DEFAULT_CHART_METRICS,
+  DEFAULT_TABLE_METRICS,
+  DEFAULT_VISIBLE_METRICS
+} from '@/constants/metrics.contsants'
 // Define all available metrics
 export const availableMetrics: Metric[] = [
   { key: 'Date', name: 'Date', unit: '' },
@@ -21,18 +25,6 @@ export const availableMetrics: Metric[] = [
   { key: 'BMR', name: 'BMR', color: '#A855F7', unit: 'kcal' },
   { key: 'Muscle Mass', name: 'Muscle Mass lbs', color: '#A855F7', unit: 'lbs' }
 ];
-
-// Default selected metrics - these will be overridden by database values
-const DEFAULT_TABLE_METRICS = [
-  'Date', 'Weight', 'BMI', 'Body Fat %', 'V-Fat', 'S-Fat', 'Water %', 'BMR'
-];
-
-const DEFAULT_CHART_METRICS = [
-  'Weight', 'BMI', 'Body Fat %', 'V-Fat', 'S-Fat', 'Water %', 'BMR'
-];
-
-// Default visible metrics (initially showing only Weight)
-const DEFAULT_VISIBLE_METRICS = ['Weight'];
 
 interface MetricsContextType {
   availableMetrics: Metric[];

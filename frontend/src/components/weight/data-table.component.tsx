@@ -1,12 +1,12 @@
 // frontend/src/components/weight/DataTable.tsx
 import React, { useState, useRef, useEffect } from 'react';
-import { WeightEntry } from '../../types/weight-data.types';
-import { formatValue } from '../../utils/caclulations.utils';
-import { EditButton } from './edit-button.component';
-import { DeleteButton } from './delete-button.component';
-import { WeightDataForm } from './weight-data-form.component';
-import { useMetrics } from '../../contexts/metrics.context';
-import { useConfirmation } from '../../contexts/confgirmation.context';
+import { WeightEntry } from '@/types/weight-data.types';
+import { formatValue } from '@/utils/caclulations.utils';
+import { EditButton } from '@/components/weight/edit-button.component';
+import { DeleteButton } from '@/components/weight/delete-button.component';
+import { WeightDataForm } from '@/components/weight/weight-data-form.component';
+import { useMetrics } from '@/contexts/metrics.context';
+import { useConfirmation } from '@/contexts/confgirmation.context';
 
 // Type for sort direction
 type SortDirection = 'asc' | 'desc';

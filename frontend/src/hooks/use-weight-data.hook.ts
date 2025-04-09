@@ -42,19 +42,6 @@ export const useWeightData = (): {
     }
   };
 
-  // const uploadData = async (file: File): Promise<void> => {
-  //   try {
-  //     setLoading(true);
-  //     setError(null);
-  //     await weightApi.uploadWeightData(file);
-  //     await fetchData();
-  //   } catch (err) {
-  //     setError('Failed to upload weight data');
-  //     console.error(err);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const uploadData = async (file: File): Promise<boolean> => {
     try {
       setLoading(true);

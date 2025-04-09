@@ -3,7 +3,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSidebarState } from '@/contexts/sidebar.context';
 import { useDarkMode } from '@/contexts/dark-mode-provider.context';
-import { HomeIcon, DataIcon, SettingsIcon, ChevronLeftIcon, ChevronRightIcon, XIcon } from './icons.component';
+import { HomeIcon, DataIcon, SettingsIcon, ChevronLeftIcon, ChevronRightIcon, XIcon } from '@/components/common/icons.component';
 
 interface SidebarProps {
   isMobileMenuOpen: boolean;

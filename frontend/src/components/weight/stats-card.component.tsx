@@ -1,6 +1,5 @@
-// frontend/src/components/weight/StatsCard.tsx
 import React from 'react';
-import { WeightStats } from '../../types/weight-data.types';
+import { WeightStats, createEmptyWeightStats } from '@/types/weight-data.types';
 
 interface StatsCardProps {
   stats: WeightStats | null;
@@ -8,14 +7,15 @@ interface StatsCardProps {
 }
 
 // Helper function to format values with proper decimal places
-const formatValue = (value: number, decimalPlaces: number = 1): string => {
+const formatValue = (value: number | undefined, decimalPlaces: number = 1): string => {
+  if (value === undefined || isNaN(value)) return "N/A";
   return value.toFixed(decimalPlaces);
 };
 
 // Reusable stat display component
 const StatItem: React.FC<{
   label: string;
-  value: number | string;
+  value: number | string | undefined;
   suffix?: string;
   size?: 'small' | 'large';
 }> = ({ label, value, suffix = '', size = 'small' }) => {
@@ -27,7 +27,7 @@ const StatItem: React.FC<{
     <div>
       <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</p>
       <p className={valueClass}>
-        {value}{suffix && ` ${suffix}`}
+        {value !== undefined ? `${value}${suffix && ` ${suffix}`}` : 'N/A'}
       </p>
     </div>
   );
@@ -54,13 +54,20 @@ export const StatsCard: React.FC<StatsCardProps> = ({ stats, loading }) => {
     );
   }
 
-  // Extract the stats we need
-  const { latest, oldest, count, stats: statDetails } = stats;
-  const weightStats = statDetails.Weight;
+  // Create a default empty stats object to use for fallbacks
+  const emptyStats = createEmptyWeightStats();
 
-  // Calculate weight change
-  const weightChange = latest.Weight - oldest.Weight;
-  const weightChangePercent = (weightChange / oldest.Weight) * 100;
+  // Extract the stats we need - with proper typing and fallbacks
+  const { latest = emptyStats.latest, oldest = emptyStats.oldest, count = 0, stats: statDetails = emptyStats.stats } = stats;
+  
+  // Use the Weight stats with fallback
+  const weightStats = statDetails.Weight || emptyStats.stats.Weight;
+
+  // Calculate weight change with proper fallbacks
+  const latestWeight = latest.Weight;
+  const oldestWeight = oldest.Weight;
+  const weightChange = latestWeight - oldestWeight;
+  const weightChangePercent = oldestWeight ? (weightChange / oldestWeight) * 100 : 0;
 
   return (
     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md transition-colors duration-200">
@@ -71,10 +78,10 @@ export const StatsCard: React.FC<StatsCardProps> = ({ stats, loading }) => {
         <div className="space-y-2">
           <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Current Weight</h3>
           <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-            {formatValue(latest.Weight)} lbs
+            {formatValue(latestWeight)} lbs
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Date: {latest.Date}
+            Date: {latest.Date || 'N/A'}
           </p>
 
           <div className="mt-2">

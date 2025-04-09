@@ -1,6 +1,6 @@
 // frontend/src/components/settings/DarkModeToggle.tsx
 import React from 'react';
-import { useDarkMode } from '../../contexts/dark-mode-provider.context';
+import { useDarkMode } from '@/contexts/dark-mode-provider.context';
 
 export const DarkModeToggle: React.FC = () => {
   const { darkMode, toggleDarkMode } = useDarkMode();

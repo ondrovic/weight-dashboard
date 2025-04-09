@@ -1,6 +1,6 @@
 // frontend/src/components/settings/WeightGoalSettings.tsx
 import React, { useState } from 'react';
-import { useMetrics } from '../../contexts/metrics.context';
+import { useMetrics } from '@/contexts/metrics.context';
 
 export const WeightGoalSettings: React.FC = () => {
   const { goalWeight, setGoalWeight, loading } = useMetrics();

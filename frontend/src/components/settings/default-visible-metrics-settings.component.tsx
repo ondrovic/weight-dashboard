@@ -1,6 +1,6 @@
 // src/components/settings/DefaultVisibleMetricsSettings.tsx
 import React, { useState, useEffect } from 'react';
-import { useMetrics } from '../../contexts/metrics.context';
+import { useMetrics } from '@/contexts/metrics.context';
 
 export const DefaultVisibleMetricsSettings: React.FC = () => {
   const {

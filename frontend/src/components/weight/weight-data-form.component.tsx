@@ -1,6 +1,6 @@
 // src/components/weight/WeightDataForm.tsx
 import React, { useState, useEffect } from 'react';
-import { WeightEntry } from '../../types/weight-data.types';
+import { WeightEntry } from '@/types/weight-data.types';
 
 // Extended type to include UI-specific fields and allow indexing with string
 interface FormWeightEntry extends Partial<WeightEntry> {

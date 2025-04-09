@@ -1,13 +1,13 @@
 // frontend/src/components/weight/WeightMetricsCard.tsx
 import React from 'react';
-import { WeightStats } from '../../types/weight-data.types';
+import { WeightStats, WeightEntry, createEmptyWeightStats } from '@/types/weight-data.types';
 import {
   calculateTotalWeightChange,
   calculateDaysBetween,
   calculateDailyRate,
   calculateCaloricBalance,
   formatValue
-} from '../../utils/caclulations.utils';
+} from '@/utils/caclulations.utils';
 
 interface WeightMetricsCardProps {
   stats: WeightStats | null;
@@ -75,23 +75,47 @@ export const WeightMetricsCard: React.FC<WeightMetricsCardProps> = ({
     );
   }
 
-  // Calculate metrics
-  const { change, percentChange, isLoss } = calculateTotalWeightChange(stats);
-  const days = calculateDaysBetween(stats.oldest.Date, stats.latest.Date);
-  const dailyRate = calculateDailyRate(
-    stats.oldest.Weight,
-    stats.latest.Weight,
-    stats.oldest.Date,
-    stats.latest.Date
-  );
+  // Use safe defaults with empty stats
+  const safeStats = stats || createEmptyWeightStats();
+  const latest = safeStats.latest || {} as WeightEntry;
+  const oldest = safeStats.oldest || {} as WeightEntry;
+
+  // Safe access to dates
+  const latestDate = latest.Date || '';
+  const oldestDate = oldest.Date || '';
+  
+  // Calculate metrics safely
+  const { change, percentChange, isLoss } = calculateTotalWeightChange(safeStats);
+  
+  // Only calculate if we have valid dates
+  const days = (latestDate && oldestDate) 
+    ? calculateDaysBetween(oldestDate, latestDate)
+    : 0;
+    
+  const dailyRate = (latestDate && oldestDate && latest.Weight !== undefined && oldest.Weight !== undefined) 
+    ? calculateDailyRate(
+        oldest.Weight,
+        latest.Weight,
+        oldestDate,
+        latestDate
+      )
+    : 0;
+    
   const caloricBalance = calculateCaloricBalance(change, days);
 
-  // Calculate body composition changes
-  const fatMassChange =
-    (stats.latest.Weight * stats.latest["Body Fat %"] / 100) -
-    (stats.oldest.Weight * stats.oldest["Body Fat %"] / 100);
+  // Calculate body composition changes safely
+  const latestWeight = latest.Weight || 0;
+  const latestBodyFat = latest["Body Fat %"] || 0;
+  const oldestWeight = oldest.Weight || 0;
+  const oldestBodyFat = oldest["Body Fat %"] || 0;
+  
+  const fatMassChange = 
+    (latestWeight * latestBodyFat / 100) -
+    (oldestWeight * oldestBodyFat / 100);
 
-  const muscleMassChange = stats.latest["Muscle Mass"] - stats.oldest["Muscle Mass"];
+  const latestMuscleMass = latest["Muscle Mass"] || 0;
+  const oldestMuscleMass = oldest["Muscle Mass"] || 0;
+  const muscleMassChange = latestMuscleMass - oldestMuscleMass;
 
   return (
     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md transition-colors duration-200">
@@ -144,13 +168,13 @@ export const WeightMetricsCard: React.FC<WeightMetricsCardProps> = ({
             <h3 className="text-md font-medium text-gray-700 dark:text-gray-200">Body Fat %</h3>
             <div className="flex justify-between items-center">
               <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                {formatValue(stats.oldest["Body Fat %"])}% → {formatValue(stats.latest["Body Fat %"])}%
+                {formatValue(oldestBodyFat)}% → {formatValue(latestBodyFat)}%
               </p>
-              <p className={`text-sm font-medium ${stats.latest["Body Fat %"] < stats.oldest["Body Fat %"]
+              <p className={`text-sm font-medium ${latestBodyFat < oldestBodyFat
                   ? 'text-green-600 dark:text-green-400'
                   : 'text-red-600 dark:text-red-400'
                 }`}>
-                {formatValue(stats.latest["Body Fat %"] - stats.oldest["Body Fat %"], 1)}%
+                {formatValue(latestBodyFat - oldestBodyFat, 1)}%
               </p>
             </div>
           </div>
@@ -158,28 +182,28 @@ export const WeightMetricsCard: React.FC<WeightMetricsCardProps> = ({
       </div>
 
       {/* Goal progress section */}
-      {goalWeight && (
+      {goalWeight && latestWeight && oldestWeight && (
         <div className="mt-6">
           <h3 className="text-md font-medium text-gray-700 dark:text-gray-200 mb-2">Goal Progress</h3>
 
           <ProgressBar
-            current={stats.latest.Weight}
-            start={stats.oldest.Weight}
+            current={latestWeight}
+            start={oldestWeight}
             goal={goalWeight}
-            label={`${stats.oldest.Weight.toFixed(0)} lbs → ${goalWeight.toFixed(0)} lbs`}
+            label={`${oldestWeight.toFixed(0)} lbs → ${goalWeight.toFixed(0)} lbs`}
           />
 
-          {dailyRate !== 0 && (
+          {dailyRate !== 0 && latestWeight && goalWeight && (
             <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               <p>
-                {dailyRate < 0 && stats.latest.Weight > goalWeight && (
-                  <>Estimated {Math.ceil(Math.abs((stats.latest.Weight - goalWeight) / dailyRate))} days remaining at current rate</>
+                {dailyRate < 0 && latestWeight > goalWeight && (
+                  <>Estimated {Math.ceil(Math.abs((latestWeight - goalWeight) / dailyRate))} days remaining at current rate</>
                 )}
-                {dailyRate > 0 && stats.latest.Weight < goalWeight && (
-                  <>Estimated {Math.ceil(Math.abs((goalWeight - stats.latest.Weight) / dailyRate))} days remaining at current rate</>
+                {dailyRate > 0 && latestWeight < goalWeight && (
+                  <>Estimated {Math.ceil(Math.abs((goalWeight - latestWeight) / dailyRate))} days remaining at current rate</>
                 )}
-                {((dailyRate < 0 && stats.latest.Weight < goalWeight) ||
-                  (dailyRate > 0 && stats.latest.Weight > goalWeight)) && (
+                {((dailyRate < 0 && latestWeight < goalWeight) ||
+                  (dailyRate > 0 && latestWeight > goalWeight)) && (
                     <>Current trend is moving away from goal</>
                   )}
               </p>

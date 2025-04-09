@@ -1,5 +1,5 @@
 // frontend/src/utils/calculations.ts
-import { WeightEntry, WeightStats } from '../types/weight-data.types';
+import { WeightEntry, WeightStats } from '@/types/weight-data.types';
 
 /**
  * Calculate BMI from weight (lbs) and height (inches)
@@ -49,13 +49,29 @@ export const formatValue = (value: number, decimalPlaces: number = 1): string =>
 /**
  * Calculate total weight change from stats object
  */
-export const calculateTotalWeightChange = (stats: WeightStats): { 
+/**
+ * Calculate total weight change from stats object
+ */
+export const calculateTotalWeightChange = (stats: WeightStats | null | undefined): { 
   change: number; 
   percentChange: number; 
   isLoss: boolean;
 } => {
-  const change = stats.latest.Weight - stats.oldest.Weight;
-  const percentChange = calculatePercentageChange(stats.latest.Weight, stats.oldest.Weight);
+  // Return default values if stats is null or undefined
+  if (!stats || !stats.latest || !stats.oldest) {
+    return {
+      change: 0,
+      percentChange: 0,
+      isLoss: false
+    };
+  }
+  
+  // Safely access Weight properties with fallbacks to 0
+  const latestWeight = stats.latest.Weight ?? 0;
+  const oldestWeight = stats.oldest.Weight ?? 0;
+  
+  const change = latestWeight - oldestWeight;
+  const percentChange = calculatePercentageChange(latestWeight, oldestWeight);
   
   return {
     change,

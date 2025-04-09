@@ -1,6 +1,6 @@
 // frontend/src/components/settings/ChartMetricsSettings.tsx
 import React, { useState, useEffect } from 'react';
-import { useMetrics } from '../../contexts/metrics.context';
+import { useMetrics } from '@/contexts/metrics.context';
 
 export const ChartMetricsSettings: React.FC = () => {
   const {

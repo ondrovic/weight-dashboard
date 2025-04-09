@@ -1,7 +1,7 @@
 // src/components/weight/DataManagement.tsx
 import React, { useState } from 'react';
-import { useConfirmation } from '../../contexts/confgirmation.context';
-import { weightApi } from '../../services/api.service';
+import { useConfirmation } from '@/contexts/confgirmation.context';
+import { weightApi } from '@/services/api.service';
 
 interface DataManagementProps {
   onDataChange?: () => void;  // Callback to notify parent component of data changes
