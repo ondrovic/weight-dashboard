@@ -1,4 +1,4 @@
-// backend/src/types/userSettings.ts
+// src/types/api/user-settings.types.ts
 
 /**
  * @swagger
@@ -51,3 +51,15 @@
  *           format: date-time
  *           description: When the settings were last updated
  */
+
+export interface UserSettings {
+  userId: string;
+  displayName: string;
+  tableMetrics: string[];
+  chartMetrics: string[];
+  defaultVisibleMetrics: string[];
+  goalWeight: number | null;
+  darkMode: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

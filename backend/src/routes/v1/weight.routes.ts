@@ -14,13 +14,13 @@ import {
   exportWeightData,
   downloadWeightDataTemplate,
   clearAllWeightData
-} from '../controllers/weightController';
+} from '../../controllers/weight.controller';
 
 const router = Router();
 
 /**
  * @swagger
- * /api/weight:
+ * /api/v1/weight:
  *   get:
  *     summary: Get all processed weight data
  *     tags: [Weight]
@@ -38,7 +38,7 @@ router.get('/', getWeightData);
 
 /**
  * @swagger
- * /api/weight/stats:
+ * /api/v1/weight/stats:
  *   get:
  *     summary: Get weight data statistics
  *     tags: [Weight]
@@ -63,7 +63,7 @@ router.get('/stats', getWeightStats);
 
 /**
  * @swagger
- * /api/weight/ids:
+ * /api/v1/weight/ids:
  *   get:
  *     summary: Get a list of all weight record IDs
  *     tags: [Weight]
@@ -90,7 +90,7 @@ router.get('/ids', getAllWeightIds);
 
 /**
  * @swagger
- * /api/weight/export:
+ * /api/v1/weight/export:
  *   get:
  *     summary: Export all weight data as a CSV file
  *     tags: [Weight]
@@ -111,7 +111,7 @@ router.get('/export', exportWeightData);
 
 /**
  * @swagger
- * /api/weight/template:
+ * /api/v1/weight/template:
  *   get:
  *     summary: Download a CSV template with the correct headers
  *     tags: [Weight]
@@ -130,7 +130,7 @@ router.get('/template', downloadWeightDataTemplate);
 
 /**
  * @swagger
- * /api/weight/all:
+ * /api/v1/weight/all:
  *   delete:
  *     summary: Delete all weight data records
  *     tags: [Weight]
@@ -153,7 +153,7 @@ router.delete('/all', clearAllWeightData);
 
 /**
  * @swagger
- * /api/weight/range:
+ * /api/v1/weight/range:
  *   get:
  *     summary: Get weight data for a specific date range
  *     tags: [Weight]
@@ -188,7 +188,7 @@ router.get('/range', getWeightDataRange);
 
 /**
  * @swagger
- * /api/weight/upload:
+ * /api/v1/weight/upload:
  *   post:
  *     summary: Upload and process raw weight data
  *     tags: [Weight]
@@ -230,7 +230,7 @@ router.post('/upload', upload.single('file'), uploadWeightData);
 
 /**
  * @swagger
- * /api/weight/entry:
+ * /api/v1/weight/entry:
  *   post:
  *     summary: Create a manual weight data entry
  *     tags: [Weight]
@@ -304,7 +304,7 @@ router.post('/entry', createWeightEntry);
 
 /**
  * @swagger
- * /api/weight/{id}:
+ * /api/v1/weight/{id}:
  *   get:
  *     summary: Get a single weight record by ID
  *     tags: [Weight]
@@ -348,7 +348,7 @@ router.get('/:id', getWeightDataById);
 
 /**
  * @swagger
- * /api/weight/{id}:
+ * /api/v1/weight/{id}:
  *   put:
  *     summary: Update a weight data record by ID
  *     tags: [Weight]
@@ -448,7 +448,7 @@ router.put('/:id', updateWeightData);
 
 /**
  * @swagger
- * /api/weight/{id}:
+ * /api/v1/weight/{id}:
  *   delete:
  *     summary: Delete a weight data record
  *     tags: [Weight]

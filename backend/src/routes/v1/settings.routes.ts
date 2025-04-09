@@ -1,12 +1,13 @@
-// backend/src/routes/settingsRoutes.ts
+// src/routes/v1/settings.routes.ts
+
 import { Router } from 'express';
-import { getSettings, updateSettings, resetSettings } from '../controllers/settingsController';
+import { getSettings, updateSettings, resetSettings } from '../../controllers/settings.controller';
 
 const router = Router();
 
 /**
  * @swagger
- * /api/settings:
+ * /api/v1/settings:
  *   get:
  *     summary: Get user settings
  *     tags: [Settings]
@@ -24,7 +25,7 @@ router.get('/', getSettings);
 
 /**
  * @swagger
- * /api/settings:
+ * /api/v1/settings:
  *   put:
  *     summary: Update user settings
  *     tags: [Settings]
@@ -71,7 +72,7 @@ router.put('/', updateSettings);
 
 /**
  * @swagger
- * /api/settings/reset:
+ * /api/v1/settings/reset:
  *   post:
  *     summary: Reset user settings to defaults
  *     tags: [Settings]

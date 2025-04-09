@@ -1,30 +1,18 @@
-import fs from 'fs';
-import path from 'path';
-import weightRoutes from './routes/weightRoutes';
-import settingsRoutes from './routes/settingsRoutes';
+import { configureServer, startServer } from './server';
 import { connectDB } from './config/db';
-import { configureServer, startServer } from './config/server';
+import dotenv from 'dotenv';
 
-// Connect to MongoDB
-connectDB();
+dotenv.config();
 
-// Configure the express app
-const { app, PORT } = configureServer();
+const bootstrap = async () => {
+  try {
+    await connectDB();
+    const { app, PORT } = configureServer();
+    startServer(app, PORT);
+  } catch (err) {
+    console.error('❌ Startup error:', err);
+    process.exit(1);
+  }
+};
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// API routes
-app.use('/api/weight', weightRoutes);
-app.use('/api/settings', settingsRoutes);
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// Start the server
-startServer(app, PORT);
+bootstrap();

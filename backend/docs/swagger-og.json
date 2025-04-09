@@ -1,0 +1,1001 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Weight Tracker API",
+    "version": "1.0.0",
+    "description": "API for tracking weight and related metrics",
+    "license": {
+      "name": "MIT",
+      "url": "https://spdx.org/licenses/MIT.html"
+    },
+    "contact": {
+      "name": "API Support",
+      "url": "https://yourwebsite.com/support",
+      "email": "support@yourwebsite.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "V1",
+      "description": "V1 API endpoints"
+    },
+    {
+      "name": "V1/Settings",
+      "description": "Settings operations"
+    },
+    {
+      "name": "V1/Weight",
+      "description": "Weight operations"
+    },
+    {
+      "name": "Schemas",
+      "description": "API schemas and models"
+    }
+  ],
+  "paths": {
+    "/api/v1/settings": {
+      "get": {
+        "summary": "Get user settings",
+        "tags": [
+          "V1",
+          "V1/Settings"
+        ],
+        "responses": {
+          "200": {
+            "description": "User settings retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSettings"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update user settings",
+        "tags": [
+          "V1",
+          "V1/Settings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tableMetrics": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "List of metrics to display in the table view"
+                  },
+                  "chartMetrics": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "List of metrics to be available in the chart view"
+                  },
+                  "defaultVisibleMetrics": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "List of metrics visible by default in the chart"
+                  },
+                  "goalWeight": {
+                    "type": "number",
+                    "nullable": true,
+                    "description": "Target weight goal for the user"
+                  },
+                  "darkMode": {
+                    "type": "boolean",
+                    "description": "Whether dark mode is enabled"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Settings updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSettings"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/v1/settings/reset": {
+      "post": {
+        "summary": "Reset user settings to defaults",
+        "tags": [
+          "V1",
+          "V1/Settings"
+        ],
+        "responses": {
+          "200": {
+            "description": "Settings reset successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSettings"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/v1/weight": {
+      "get": {
+        "summary": "Get all processed weight data",
+        "tags": [
+          "V1",
+          "V1/Weight"
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of processed weight data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProcessedWeightData"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/weight/stats": {
+      "get": {
+        "summary": "Get weight data statistics",
+        "tags": [
+          "V1",
+          "V1/Weight"
+        ],
+        "responses": {
+          "200": {
+            "description": "Statistics for the weight data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "number"
+                    },
+                    "latest": {
+                      "$ref": "#/components/schemas/ProcessedWeightData"
+                    },
+                    "oldest": {
+                      "$ref": "#/components/schemas/ProcessedWeightData"
+                    },
+                    "weightStats": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/weight/ids": {
+      "get": {
+        "summary": "Get a list of all weight record IDs",
+        "tags": [
+          "V1",
+          "V1/Weight"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of all record IDs with dates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "MongoDB ObjectId"
+                      },
+                      "date": {
+                        "type": "string",
+                        "description": "Record date in MM/DD/YYYY format"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/v1/weight/export": {
+      "get": {
+        "summary": "Export all weight data as a CSV file",
+        "tags": [
+          "V1",
+          "V1/Weight"
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV file with all weight data",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No data to export"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/v1/weight/template": {
+      "get": {
+        "summary": "Download a CSV template with the correct headers",
+        "tags": [
+          "V1",
+          "V1/Weight"
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV template file",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/v1/weight/all": {
+      "delete": {
+        "summary": "Delete all weight data records",
+        "tags": [
+          "V1",
+          "V1/Weight"
+        ],
+        "responses": {
+          "200": {
+            "description": "All records deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "deletedCount": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/v1/weight/range": {
+      "get": {
+        "summary": "Get weight data for a specific date range",
+        "tags": [
+          "V1",
+          "V1/Weight"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "required": true,
+            "description": "Start date of the range (YYYY-MM-DD)"
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "required": true,
+            "description": "End date of the range (YYYY-MM-DD)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of processed weight data within the date range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProcessedWeightData"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required parameters"
+          }
+        }
+      }
+    },
+    "/api/v1/weight/upload": {
+      "post": {
+        "summary": "Upload and process raw weight data",
+        "tags": [
+          "V1",
+          "V1/Weight"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The raw weight data CSV file"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "count": {
+                      "type": "number"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProcessedWeightData"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No file uploaded or invalid file format"
+          },
+          "500": {
+            "description": "Error processing data"
+          }
+        }
+      }
+    },
+    "/api/v1/weight/entry": {
+      "post": {
+        "summary": "Create a manual weight data entry",
+        "tags": [
+          "V1",
+          "V1/Weight"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "Date",
+                  "Weight"
+                ],
+                "properties": {
+                  "Date": {
+                    "type": "string",
+                    "format": "MM-DD-YY",
+                    "description": "Date of the weight measurement"
+                  },
+                  "Weight": {
+                    "type": "number",
+                    "description": "Weight in pounds"
+                  },
+                  "BMI": {
+                    "type": "number",
+                    "description": "Body Mass Index"
+                  },
+                  "Body Fat %": {
+                    "type": "number",
+                    "description": "Body fat percentage"
+                  },
+                  "V-Fat": {
+                    "type": "number",
+                    "description": "Visceral fat"
+                  },
+                  "S-Fat": {
+                    "type": "number",
+                    "description": "Subcutaneous fat"
+                  },
+                  "Age": {
+                    "type": "number",
+                    "description": "Metabolic age"
+                  },
+                  "HR": {
+                    "type": "number",
+                    "description": "Heart rate"
+                  },
+                  "Water %": {
+                    "type": "number",
+                    "description": "Water percentage"
+                  },
+                  "Bone Mass %": {
+                    "type": "number",
+                    "description": "Bone mass percentage"
+                  },
+                  "Protien %": {
+                    "type": "number",
+                    "description": "Protein percentage"
+                  },
+                  "Fat Free Weight": {
+                    "type": "number",
+                    "description": "Fat free weight in pounds"
+                  },
+                  "Bone Mass LB": {
+                    "type": "number",
+                    "description": "Bone mass in pounds"
+                  },
+                  "BMR": {
+                    "type": "number",
+                    "description": "Basal Metabolic Rate"
+                  },
+                  "Muscle Mass": {
+                    "type": "number",
+                    "description": "Muscle mass in pounds"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Weight entry updated successfully (if date already exists)"
+          },
+          "201": {
+            "description": "Weight entry created successfully"
+          },
+          "400": {
+            "description": "Invalid request data"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/v1/weight/{id}": {
+      "get": {
+        "summary": "Get a single weight record by ID",
+        "tags": [
+          "V1",
+          "V1/Weight"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "MongoDB ObjectId of the weight record (24-character hexadecimal string)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The requested weight record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ProcessedWeightData"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "MongoDB ObjectId of the record"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Record not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a weight data record by ID",
+        "tags": [
+          "V1",
+          "V1/Weight"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The weight data record ID (24-character hexadecimal string)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Date": {
+                    "type": "string",
+                    "description": "Date in MM/DD/YY or MM/DD/YYYY format"
+                  },
+                  "Weight": {
+                    "type": "number",
+                    "description": "Body weight in pounds"
+                  },
+                  "BMI": {
+                    "type": "number",
+                    "description": "Body Mass Index"
+                  },
+                  "Body Fat %": {
+                    "type": "number",
+                    "description": "Percentage of body fat"
+                  },
+                  "V-Fat": {
+                    "type": "number",
+                    "description": "Visceral fat level"
+                  },
+                  "S-Fat": {
+                    "type": "number",
+                    "description": "Subcutaneous fat level"
+                  },
+                  "Age": {
+                    "type": "number",
+                    "description": "Metabolic age"
+                  },
+                  "HR": {
+                    "type": "number",
+                    "description": "Heart rate in BPM"
+                  },
+                  "Water %": {
+                    "type": "number",
+                    "description": "Body water percentage"
+                  },
+                  "Bone Mass %": {
+                    "type": "number",
+                    "description": "Bone mass percentage"
+                  },
+                  "Protien %": {
+                    "type": "number",
+                    "description": "Protein percentage"
+                  },
+                  "Fat Free Weight": {
+                    "type": "number",
+                    "description": "Fat-free body weight in pounds"
+                  },
+                  "Bone Mass LB": {
+                    "type": "number",
+                    "description": "Bone mass in pounds"
+                  },
+                  "BMR": {
+                    "type": "number",
+                    "description": "Basal Metabolic Rate"
+                  },
+                  "Muscle Mass": {
+                    "type": "number",
+                    "description": "Muscle mass in pounds"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Record updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ProcessedWeightData"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "MongoDB ObjectId of the record"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID format or update data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "validationErrors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Record not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a weight data record",
+        "tags": [
+          "V1",
+          "V1/Weight"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The weight data record ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Record deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Record not found"
+          }
+        }
+      }
+    },
+    "/schemas/UserSettings": {
+      "get": {
+        "tags": [
+          "Schemas"
+        ],
+        "summary": "Schema for UserSettings",
+        "responses": {
+          "200": {
+            "description": "Schema definition for UserSettings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSettings"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas/ProcessedWeightData": {
+      "get": {
+        "tags": [
+          "Schemas"
+        ],
+        "summary": "Schema for ProcessedWeightData",
+        "responses": {
+          "200": {
+            "description": "Schema definition for ProcessedWeightData",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessedWeightData"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UserSettings": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "Unique identifier for the user",
+            "example": "default"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Display name for the user",
+            "example": "Default User"
+          },
+          "tableMetrics": {
+            "type": "array",
+            "description": "Metrics to display in table view",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "Date",
+              "Weight",
+              "BMI",
+              "Body Fat %",
+              "V-Fat",
+              "S-Fat",
+              "Water %",
+              "BMR"
+            ]
+          },
+          "chartMetrics": {
+            "type": "array",
+            "description": "Metrics to display in chart view",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "Weight",
+              "BMI",
+              "Body Fat %",
+              "V-Fat",
+              "S-Fat",
+              "Water %",
+              "BMR"
+            ]
+          },
+          "defaultVisibleMetrics": {
+            "type": "array",
+            "description": "Metrics that are visible by default",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "Weight"
+            ]
+          },
+          "goalWeight": {
+            "type": "number",
+            "nullable": true,
+            "description": "Target weight goal for the user",
+            "example": 180
+          },
+          "darkMode": {
+            "type": "boolean",
+            "description": "Whether dark mode is enabled",
+            "example": false
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the settings were created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the settings were last updated"
+          }
+        }
+      },
+      "ProcessedWeightData": {
+        "type": "object",
+        "properties": {
+          "Date": {
+            "type": "string",
+            "description": "The date of the measurement",
+            "example": "04/05/2025"
+          },
+          "Weight": {
+            "type": "number",
+            "description": "Body weight in pounds",
+            "example": 185.5
+          },
+          "BMI": {
+            "type": "number",
+            "description": "Body Mass Index",
+            "example": 24.6
+          },
+          "Body Fat %": {
+            "type": "number",
+            "description": "Percentage of body fat",
+            "example": 18.2
+          },
+          "V-Fat": {
+            "type": "number",
+            "description": "Visceral fat level",
+            "example": 7.5
+          },
+          "S-Fat": {
+            "type": "number",
+            "description": "Subcutaneous fat level",
+            "example": 15.3
+          },
+          "Age": {
+            "type": "number",
+            "description": "Metabolic age",
+            "example": 35
+          },
+          "HR": {
+            "type": "number",
+            "description": "Heart rate in BPM",
+            "example": 68
+          },
+          "Water %": {
+            "type": "number",
+            "description": "Body water percentage",
+            "example": 55.2
+          },
+          "Bone Mass %": {
+            "type": "number",
+            "description": "Bone mass percentage",
+            "example": 4.5
+          },
+          "Protien %": {
+            "type": "number",
+            "description": "Protein percentage",
+            "example": 18.1
+          },
+          "Fat Free Weight": {
+            "type": "number",
+            "description": "Fat-free body weight in pounds",
+            "example": 152.3
+          },
+          "Bone Mass LB": {
+            "type": "number",
+            "description": "Bone mass in pounds",
+            "example": 8.3
+          },
+          "BMR": {
+            "type": "number",
+            "description": "Basal Metabolic Rate",
+            "example": 1850
+          },
+          "Muscle Mass": {
+            "type": "number",
+            "description": "Muscle mass in pounds",
+            "example": 142.6
+          }
+        }
+      }
+    }
+  }
+}
