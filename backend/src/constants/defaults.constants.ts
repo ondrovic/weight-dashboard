@@ -9,7 +9,6 @@ export const DEFAULT_TABLE_METRICS = [
   'V-Fat',
   'S-Fat',
   'Water %',
-  'BMR',
   'Bone Mass %',
   'Bone Mass LB',
   'Protien %',
