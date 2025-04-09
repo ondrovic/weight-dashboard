@@ -22,39 +22,28 @@
   ],
   "tags": [
     {
-      "name": "V1/Settings",
-      "description": "Settings operations",
-      "x-displayName": "Settings",
+      "name": "v1/settings",
+      "description": "settings operations",
+      "x-displayName": "settings",
       "x-tagGroups": [
-        "V1"
+        "v1"
       ]
     },
     {
-      "name": "V1/Weight",
-      "description": "Weight operations",
-      "x-displayName": "Weight",
+      "name": "v1/weight",
+      "description": "weight operations",
+      "x-displayName": "weight",
       "x-tagGroups": [
-        "V1"
+        "v1"
       ]
-    },
-    {
-      "name": "Schemas",
-      "description": "API schemas and models",
-      "x-displayName": "Schemas"
     }
   ],
   "x-tagGroups": [
     {
-      "name": "V1",
+      "name": "v1",
       "tags": [
-        "V1/Settings",
-        "V1/Weight"
-      ]
-    },
-    {
-      "name": "Data Models",
-      "tags": [
-        "Schemas"
+        "v1/settings",
+        "v1/weight"
       ]
     }
   ],
@@ -63,7 +52,7 @@
       "get": {
         "summary": "Get user settings",
         "tags": [
-          "V1/Settings"
+          "v1/settings"
         ],
         "responses": {
           "200": {
@@ -84,7 +73,7 @@
       "put": {
         "summary": "Update user settings",
         "tags": [
-          "V1/Settings"
+          "v1/settings"
         ],
         "requestBody": {
           "required": true,
@@ -149,7 +138,7 @@
       "post": {
         "summary": "Reset user settings to defaults",
         "tags": [
-          "V1/Settings"
+          "v1/settings"
         ],
         "responses": {
           "200": {
@@ -172,7 +161,7 @@
       "get": {
         "summary": "Get all processed weight data",
         "tags": [
-          "V1/Weight"
+          "v1/weight"
         ],
         "responses": {
           "200": {
@@ -195,7 +184,7 @@
       "get": {
         "summary": "Get weight data statistics",
         "tags": [
-          "V1/Weight"
+          "v1/weight"
         ],
         "responses": {
           "200": {
@@ -229,7 +218,7 @@
       "get": {
         "summary": "Get a list of all weight record IDs",
         "tags": [
-          "V1/Weight"
+          "v1/weight"
         ],
         "responses": {
           "200": {
@@ -265,7 +254,7 @@
       "get": {
         "summary": "Export all weight data as a CSV file",
         "tags": [
-          "V1/Weight"
+          "v1/weight"
         ],
         "responses": {
           "200": {
@@ -292,7 +281,7 @@
       "get": {
         "summary": "Download a CSV template with the correct headers",
         "tags": [
-          "V1/Weight"
+          "v1/weight"
         ],
         "responses": {
           "200": {
@@ -316,7 +305,7 @@
       "delete": {
         "summary": "Delete all weight data records",
         "tags": [
-          "V1/Weight"
+          "v1/weight"
         ],
         "responses": {
           "200": {
@@ -347,7 +336,7 @@
       "get": {
         "summary": "Get weight data for a specific date range",
         "tags": [
-          "V1/Weight"
+          "v1/weight"
         ],
         "parameters": [
           {
@@ -395,7 +384,7 @@
       "post": {
         "summary": "Upload and process raw weight data",
         "tags": [
-          "V1/Weight"
+          "v1/weight"
         ],
         "consumes": [
           "multipart/form-data"
@@ -455,7 +444,7 @@
       "post": {
         "summary": "Create a manual weight data entry",
         "tags": [
-          "V1/Weight"
+          "v1/weight"
         ],
         "requestBody": {
           "required": true,
@@ -554,7 +543,7 @@
       "get": {
         "summary": "Get a single weight record by ID",
         "tags": [
-          "V1/Weight"
+          "v1/weight"
         ],
         "parameters": [
           {
@@ -620,7 +609,7 @@
       "put": {
         "summary": "Update a weight data record by ID",
         "tags": [
-          "V1/Weight"
+          "v1/weight"
         ],
         "parameters": [
           {
@@ -764,7 +753,7 @@
       "delete": {
         "summary": "Delete a weight data record",
         "tags": [
-          "V1/Weight"
+          "v1/weight"
         ],
         "parameters": [
           {
@@ -795,46 +784,6 @@
           },
           "404": {
             "description": "Record not found"
-          }
-        }
-      }
-    },
-    "/schemas/UserSettings": {
-      "get": {
-        "tags": [
-          "Schemas"
-        ],
-        "summary": "Schema for UserSettings",
-        "responses": {
-          "200": {
-            "description": "Schema definition for UserSettings",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserSettings"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/schemas/ProcessedWeightData": {
-      "get": {
-        "tags": [
-          "Schemas"
-        ],
-        "summary": "Schema for ProcessedWeightData",
-        "responses": {
-          "200": {
-            "description": "Schema definition for ProcessedWeightData",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProcessedWeightData"
-                }
-              }
-            }
           }
         }
       }
