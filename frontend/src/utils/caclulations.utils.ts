@@ -1,5 +1,5 @@
 // frontend/src/utils/calculations.ts
-import { WeightEntry, WeightStats } from '../types/weightData';
+import { WeightEntry, WeightStats } from '../types/weight-data.types';
 
 /**
  * Calculate BMI from weight (lbs) and height (inches)

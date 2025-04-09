@@ -1,13 +1,14 @@
 // src/pages/SettingsPage.tsx
 import React, { useState } from 'react';
-import { useMetrics } from '../contexts/MetricsContext';
-import { useConfirmation } from '../contexts/ConfirmationContext';
-import { WeightGoalSettings } from '../components/settings/WeightGoalSettings';
-import { TableColumnsSettings } from '../components/settings/TableColumnsSettings';
-import { ChartMetricsSettings } from '../components/settings/ChartMetricsSettings';
-import { DefaultVisibleMetricsSettings } from '../components/settings/DefaultVisibleMetricsSettings';
-import ResetSettings from '../components/settings/ResetSettings';
-const SettingsPage: React.FC = () => {
+import { useMetrics } from '@/contexts/metrics.context';
+import { useConfirmation } from '@/contexts/confgirmation.context';
+import { WeightGoalSettings } from '@/components/settings/weight-goal-settings.component';
+import { TableColumnsSettings } from '@/components/settings/table-columns-settings.component';
+import { ChartMetricsSettings } from '@/components/settings/chart-metrics-settings.component';
+import { DefaultVisibleMetricsSettings } from '@/components/settings/default-visible-metrics-settings.component';
+import ResetSettings from '@/components/settings/reset-settings.component';
+
+export const SettingsPage: React.FC = () => {
   const { resetToDefaults, loading, error } = useMetrics();
   const { confirm } = useConfirmation();
   const [resetSuccess, setResetSuccess] = useState(false);
@@ -78,5 +79,3 @@ const SettingsPage: React.FC = () => {
     </div>
   );
 };
-
-export default SettingsPage;

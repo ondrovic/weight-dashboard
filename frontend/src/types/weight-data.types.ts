@@ -1,24 +1,4 @@
 // frontend/src/types/weightData.ts
-
-// // Single weight record entry from the weight data file
-// export interface WeightEntry {
-//   Date: string;
-//   Weight: number;
-//   BMI: number;
-//   "Body Fat %": number;
-//   "V-Fat": number;
-//   "S-Fat": number;
-//   Age: number;
-//   HR: number;
-//   "Water %": number;
-//   "Bone Mass %": number;
-//   "Protien %": number;
-//   "Fat Free Weight": number;
-//   "Bone Mass LB": number;
-//   BMR: number;
-//   "Muscle Mass": number;
-// }
-
 // Single weight record entry from the weight data file
 export interface WeightEntry {
   id?: string;  // Add optional id field

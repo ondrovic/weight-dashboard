@@ -1,17 +1,17 @@
 // frontend/src/App.tsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Layout } from './components/common/Layout';
-import { MetricsProvider } from './contexts/MetricsContext';
-import { DarkModeProvider } from './contexts/DarkModeProvider';
-import { SidebarProvider } from './contexts/SidebarContext';
-import { ConfirmationProvider } from './contexts/ConfirmationContext';
-import WeightDashboardPage from './pages/WeightDashboardPage';
-import DataEntryPage from './pages/DataEntryPage';
-import SettingsPage from './pages/SettingsPage';
+import { Layout } from './components/common/layout.component';
+import { MetricsProvider } from './contexts/metrics.context';
+import { DarkModeProvider } from './contexts/dark-mode-provider.context';
+import { SidebarProvider } from './contexts/sidebar.context';
+import { ConfirmationProvider } from './contexts/confgirmation.context';
+import { WeightDashboardPage } from './pages/weight-dashboard.page';
+import { DataEntryPage } from './pages/data-entry.page';
+import { SettingsPage } from './pages/settings.page';
 
 // Import dark mode CSS
-import './assets/styles/darkMode.css';
+import '@/assets/styles/dark-mode.style.css';
 
 const App: React.FC = () => {
   return (

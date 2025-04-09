@@ -1,13 +1,13 @@
 // src/pages/DataEntryPage.tsx
 import React, { useState } from 'react';
-import { useWeightData } from '../hooks/useWeightData';
-import { DataTable } from '../components/weight/DataTable';
-import { WeightDataForm } from '../components/weight/WeightDataForm';
-import { DataUpload } from '../components/weight/DataUpload';
-import { DataManagement } from '../components/weight/DataManagement';
-import { TabsComponent, TabItem } from '../components/common/TabsComponent';
+import { useWeightData } from '@/hooks/use-weight-data';
+import { DataTable } from '@/components/weight/data-table.component';
+import { WeightDataForm } from '@/components/weight/weight-data-form.component';
+import { DataUpload } from '@/components/weight/data-upload.component';
+import { DataManagement } from '@/components/weight/data-management.component';
+import { TabsComponent, TabItem } from '@/components/common/tabs.component';
 
-const DataEntryPage: React.FC = () => {
+export const DataEntryPage: React.FC = () => {
   const { 
     data,
     loading: dataLoading, 
@@ -107,5 +107,3 @@ const DataEntryPage: React.FC = () => {
     </div>
   );
 };
-
-export default DataEntryPage;

@@ -1,5 +1,5 @@
 // frontend/src/utils/dataTransformer.ts
-import { WeightEntry } from '../types/weightData';
+import { WeightEntry } from '../types/weight-data.types';
 
 interface RawWeightEntry {
   Time: string;

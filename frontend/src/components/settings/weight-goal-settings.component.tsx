@@ -1,6 +1,6 @@
 // frontend/src/components/settings/WeightGoalSettings.tsx
 import React, { useState } from 'react';
-import { useMetrics } from '../../contexts/MetricsContext';
+import { useMetrics } from '../../contexts/metrics.context';
 
 export const WeightGoalSettings: React.FC = () => {
   const { goalWeight, setGoalWeight, loading } = useMetrics();
@@ -16,18 +16,18 @@ export const WeightGoalSettings: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Convert to number or null
     const numericGoal = localGoalWeight ? parseFloat(localGoalWeight) : null;
-    
+
     if (numericGoal !== null && (isNaN(numericGoal) || numericGoal <= 0)) {
       alert('Please enter a valid weight goal (positive number)');
       return;
     }
-    
+
     await setGoalWeight(numericGoal);
     setIsSaved(true);
-    
+
     // Hide success message after 3 seconds
     setTimeout(() => setIsSaved(false), 3000);
   };
@@ -35,7 +35,7 @@ export const WeightGoalSettings: React.FC = () => {
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h2 className="text-xl font-medium text-gray-900 mb-4">Weight Goal</h2>
-      
+
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="goalWeight" className="block text-sm font-medium text-gray-700 mb-1">
@@ -56,21 +56,20 @@ export const WeightGoalSettings: React.FC = () => {
             This will be displayed on your weight chart and used for progress calculations.
           </p>
         </div>
-        
+
         {isSaved && (
           <div className="mb-4 p-2 bg-green-50 text-green-700 rounded">
             Weight goal saved successfully!
           </div>
         )}
-        
+
         <button
           type="submit"
           disabled={loading}
-          className={`w-full py-2 px-4 rounded-md text-white ${
-            loading 
-              ? 'bg-gray-400' 
+          className={`w-full py-2 px-4 rounded-md text-white ${loading
+              ? 'bg-gray-400'
               : 'bg-indigo-600 hover:bg-indigo-700'
-          }`}
+            }`}
         >
           {loading ? 'Saving...' : 'Save Goal'}
         </button>

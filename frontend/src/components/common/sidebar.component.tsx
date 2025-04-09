@@ -1,18 +1,18 @@
 // frontend/src/components/common/Sidebar.tsx
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useSidebarState } from '../../contexts/SidebarContext';
-import { useDarkMode } from '../../contexts/DarkModeProvider';
-import { HomeIcon, DataIcon, SettingsIcon, ChevronLeftIcon, ChevronRightIcon, XIcon } from './Icons';
+import { useSidebarState } from '@/contexts/sidebar.context';
+import { useDarkMode } from '@/contexts/dark-mode-provider.context';
+import { HomeIcon, DataIcon, SettingsIcon, ChevronLeftIcon, ChevronRightIcon, XIcon } from './icons.component';
 
 interface SidebarProps {
   isMobileMenuOpen: boolean;
   toggleMobileMenu: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ 
-  isMobileMenuOpen, 
-  toggleMobileMenu 
+export const Sidebar: React.FC<SidebarProps> = ({
+  isMobileMenuOpen,
+  toggleMobileMenu
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -31,12 +31,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if (window.innerWidth < 768 && isMobileMenuOpen) {
       toggleMobileMenu();
     }
-    
+
     if (isExpanded) {
       // Use a slight delay to ensure navigation happens first
       setTimeout(() => toggleSidebar(), 100);
     }
-    
+
     // Only navigate if we're not already on that page
     if (location.pathname !== href) {
       navigate(href);
@@ -49,8 +49,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className={`md:hidden ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
         <div className="fixed inset-0 z-40 flex">
           {/* Mobile overlay */}
-          <div 
-            className="fixed inset-0 bg-gray-600 bg-opacity-75" 
+          <div
+            className="fixed inset-0 bg-gray-600 bg-opacity-75"
             onClick={toggleMobileMenu}
             aria-hidden="true"
           />
@@ -76,24 +76,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <button
                     key={item.name}
                     onClick={() => handleNavigation(item.href)}
-                    className={`group flex items-center w-full px-2 py-2 text-base font-medium rounded-md ${
-                      location.pathname === item.href
-                        ? 'bg-indigo-50 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-200'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
-                    }`}
+                    className={`group flex items-center w-full px-2 py-2 text-base font-medium rounded-md ${location.pathname === item.href
+                      ? 'bg-indigo-50 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-200'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                      }`}
                   >
                     <item.icon
-                      className={`mr-4 h-6 w-6 ${
-                        location.pathname === item.href
-                          ? 'text-indigo-600 dark:text-indigo-300'
-                          : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-300'
-                      }`}
+                      className={`mr-4 h-6 w-6 ${location.pathname === item.href
+                        ? 'text-indigo-600 dark:text-indigo-300'
+                        : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-300'
+                        }`}
                       aria-hidden="true"
                     />
                     {item.name}
                   </button>
                 ))}
-                
+
                 {/* Dark mode toggle button for mobile */}
                 <button
                   onClick={toggleDarkMode}
@@ -137,7 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {isExpanded && (
                 <h1 className="text-xl font-semibold text-indigo-600 dark:text-indigo-400 truncate">Tracker</h1>
               )}
-              <button 
+              <button
                 onClick={toggleSidebar}
                 className="p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
@@ -149,19 +147,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   key={item.name}
                   onClick={() => handleNavigation(item.href)}
-                  className={`group flex items-center w-full px-2 py-2 text-sm font-medium rounded-md ${
-                    location.pathname === item.href
-                      ? 'bg-indigo-50 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-200'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
-                  } ${isExpanded ? 'justify-start' : 'justify-center'}`}
+                  className={`group flex items-center w-full px-2 py-2 text-sm font-medium rounded-md ${location.pathname === item.href
+                    ? 'bg-indigo-50 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-200'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                    } ${isExpanded ? 'justify-start' : 'justify-center'}`}
                   title={item.name}
                 >
                   <item.icon
-                    className={`flex-shrink-0 h-6 w-6 ${
-                      location.pathname === item.href
-                        ? 'text-indigo-600 dark:text-indigo-300'
-                        : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-300'
-                    }`}
+                    className={`flex-shrink-0 h-6 w-6 ${location.pathname === item.href
+                      ? 'text-indigo-600 dark:text-indigo-300'
+                      : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-300'
+                      }`}
                     aria-hidden="true"
                   />
                   {isExpanded ? (
@@ -171,7 +167,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   )}
                 </button>
               ))}
-              
+
               {/* Dark mode toggle button for desktop */}
               <button
                 onClick={toggleDarkMode}

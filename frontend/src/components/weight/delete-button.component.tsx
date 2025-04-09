@@ -1,6 +1,6 @@
 // frontend/src/components/weight/DeleteButton.tsx
 import React, { useState } from 'react';
-import { ConfirmationDialog } from '../common/ConfirmationDialog';
+import { ConfirmationDialog } from '../common/confirmation-dialog.component';
 
 interface DeleteButtonProps {
   onClick: () => void;

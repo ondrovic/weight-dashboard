@@ -1,38 +1,25 @@
-// frontend/src/pages/WeightDashboardPage.tsx
 import React from 'react';
-import { useWeightData } from '../hooks/useWeightData';
-import { WeightChart } from '../components/weight/WeightChart';
-import { StatsCard } from '../components/weight/StatsCard';
-import { WeightMetricsCard } from '../components/weight/WeightMetricsCard';
-import { useMetrics } from '../contexts/MetricsContext';
+import { useDashboard } from '@/hooks/use-dashboard';
+import { WeightChart } from '@/components/weight/weight-chart.component';
+import { StatsCard } from '@/components/weight/stats-card.component';
+import { WeightMetricsCard } from '@/components/weight/weight-metrics-card.component';
 
-const WeightDashboardPage: React.FC = () => {
-  const { 
-    data, 
-    stats, 
-    loading: dataLoading, 
-    error: dataError,
-    refreshData 
-  } = useWeightData();
-  
-  // Get goal weight from metrics context
-  const { goalWeight, error: settingsError } = useMetrics();
-
-  // Convert the goalWeight from number | null to number | undefined
-  // This resolves the TypeScript error by ensuring proper type compatibility
-  const convertedGoalWeight = goalWeight === null ? undefined : goalWeight;
-
-  // Combine errors
-  const error = dataError || settingsError;
+export const WeightDashboardPage: React.FC = () => {
+  const {
+    data,
+    stats,
+    goalWeight,
+    loading,
+    error,
+    refreshData,
+  } = useDashboard();
 
   return (
-    // Using w-full instead of container to maximize available space
     <div className="w-full">
-      {/* Error message */}
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           <p>{error}</p>
-          {dataError && (
+          {refreshData && (
             <button
               onClick={refreshData}
               className="mt-2 bg-red-700 text-white px-4 py-2 rounded hover:bg-red-800"
@@ -42,16 +29,16 @@ const WeightDashboardPage: React.FC = () => {
           )}
         </div>
       )}
-      
-      {/* Stats cards row - reduced gap and margin bottom */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-        <StatsCard stats={stats} loading={dataLoading} />
-        <WeightMetricsCard stats={stats} loading={dataLoading} goalWeight={convertedGoalWeight} />
+
+    {/* Stats cards row - reduced gap and margin bottom */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <StatsCard stats={stats} loading={loading} />
+        <WeightMetricsCard stats={stats} loading={loading} goalWeight={goalWeight} />
       </div>
 
       {/* Weight chart - reduced margin bottom */}
       <div className="mb-4">
-        <WeightChart data={data} goal={convertedGoalWeight} height={400} />
+        <WeightChart data={data} goal={goalWeight} height={400} />
       </div>
 
       {/* Additional information */}
@@ -73,5 +60,3 @@ const WeightDashboardPage: React.FC = () => {
     </div>
   );
 };
-
-export default WeightDashboardPage;

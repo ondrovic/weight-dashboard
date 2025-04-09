@@ -1,24 +1,37 @@
-// src/hooks/useWeightData.ts
+// src/hooks/use-weight-data.ts
 import { useState, useEffect } from 'react';
-import { weightApi } from '../services/api';
-import { WeightEntry, WeightStats } from '../types/weightData';
+import { weightApi } from '@/services/api.service';
+import { WeightEntry, WeightStats } from '@/types/weight-data.types';
 
-export const useWeightData = () => {
+export const useWeightData = (): {
+  data: WeightEntry[];
+  stats: WeightStats | null;
+  loading: boolean;
+  error: string | null;
+  refreshData: () => Promise<void>;
+  uploadData: (file: File) => Promise<boolean>;
+  createWeightEntry: (entry: Partial<WeightEntry>) => Promise<boolean>;
+  updateWeightData: (id: string, update: Partial<WeightEntry>) => Promise<boolean>;
+  deleteWeightData: (id: string) => Promise<boolean>;
+  getWeightDataById: (id: string) => Promise<WeightEntry | null>;
+  getWeightDataByDateRange: (startDate: string, endDate: string) => Promise<WeightEntry[]>;
+  exportData: () => Promise<void>;
+  downloadTemplate: () => Promise<void>;
+  clearAllData: () => Promise<boolean>;
+} => {
   const [data, setData] = useState<WeightEntry[]>([]);
   const [stats, setStats] = useState<WeightStats | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = async (): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
-
       const [weightData, weightStats] = await Promise.all([
         weightApi.getAllWeightData(),
         weightApi.getWeightStats(),
       ]);
-
       setData(weightData);
       setStats(weightStats);
     } catch (err) {
@@ -29,14 +42,27 @@ export const useWeightData = () => {
     }
   };
 
-  const uploadData = async (file: File) => {
+  // const uploadData = async (file: File): Promise<void> => {
+  //   try {
+  //     setLoading(true);
+  //     setError(null);
+  //     await weightApi.uploadWeightData(file);
+  //     await fetchData();
+  //   } catch (err) {
+  //     setError('Failed to upload weight data');
+  //     console.error(err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  const uploadData = async (file: File): Promise<boolean> => {
     try {
       setLoading(true);
       setError(null);
-
+  
       await weightApi.uploadWeightData(file);
       await fetchData(); // Refresh data after upload
-
+  
       return true;
     } catch (err) {
       setError('Failed to upload weight data');
@@ -46,8 +72,10 @@ export const useWeightData = () => {
       setLoading(false);
     }
   };
+  
+  
 
-  const getWeightDataById = async (id: string) => {
+  const getWeightDataById = async (id: string): Promise<WeightEntry | null> => {
     try {
       return await weightApi.getWeightDataById(id);
     } catch (err) {
@@ -56,7 +84,10 @@ export const useWeightData = () => {
     }
   };
 
-  const getWeightDataByDateRange = async (startDate: string, endDate: string) => {
+  const getWeightDataByDateRange = async (
+    startDate: string,
+    endDate: string
+  ): Promise<WeightEntry[]> => {
     try {
       return await weightApi.getWeightDataByDateRange(startDate, endDate);
     } catch (err) {
@@ -69,10 +100,8 @@ export const useWeightData = () => {
     try {
       setLoading(true);
       setError(null);
-
       await weightApi.updateWeightData(id, data);
-      await fetchData(); // Refresh data after update
-
+      await fetchData();
       return true;
     } catch (err) {
       setError('Failed to update weight data');
@@ -83,19 +112,12 @@ export const useWeightData = () => {
     }
   };
 
-  /**
- * Create a manual weight entry
- * @param entry The weight entry data
- * @returns Whether the operation was successful
- */
-  const createWeightEntry = async (entry: Partial<WeightEntry>) => {
+  const createWeightEntry = async (entry: Partial<WeightEntry>): Promise<boolean> => {
     try {
       setLoading(true);
       setError(null);
-
       await weightApi.createWeightEntry(entry);
-      await fetchData(); // Refresh data after adding a new entry
-
+      await fetchData();
       return true;
     } catch (err) {
       setError('Failed to create weight entry');
@@ -106,11 +128,11 @@ export const useWeightData = () => {
     }
   };
 
-  const deleteWeightData = async (id: string) => {
+  const deleteWeightData = async (id: string): Promise<boolean> => {
     try {
       setLoading(true);
       await weightApi.deleteWeightData(id);
-      await fetchData(); // Refresh data after deletion
+      await fetchData();
       return true;
     } catch (err) {
       setError('Failed to delete weight data');
@@ -121,14 +143,10 @@ export const useWeightData = () => {
     }
   };
 
-  /**
-   * Export all weight data as a CSV file
-   */
   const exportData = async (): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
-      
       await weightApi.exportWeightData();
     } catch (err) {
       setError('Failed to export data');
@@ -138,14 +156,10 @@ export const useWeightData = () => {
     }
   };
 
-  /**
-   * Download a CSV template with correct headers
-   */
   const downloadTemplate = async (): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
-      
       await weightApi.downloadWeightDataTemplate();
     } catch (err) {
       setError('Failed to download template');
@@ -155,17 +169,12 @@ export const useWeightData = () => {
     }
   };
 
-  /**
-   * Clear all weight data after confirmation
-   */
   const clearAllData = async (): Promise<boolean> => {
     try {
       setLoading(true);
       setError(null);
-      
       await weightApi.clearAllWeightData();
-      await fetchData(); // Refresh data after clearing
-      
+      await fetchData();
       return true;
     } catch (err) {
       setError('Failed to clear data');
@@ -176,7 +185,6 @@ export const useWeightData = () => {
     }
   };
 
-  // Fetch data when component mounts
   useEffect(() => {
     fetchData();
   }, []);
@@ -188,13 +196,13 @@ export const useWeightData = () => {
     error,
     refreshData: fetchData,
     uploadData,
-    createWeightEntry, 
+    createWeightEntry,
     updateWeightData,
+    deleteWeightData,
     getWeightDataById,
     getWeightDataByDateRange,
-    deleteWeightData,
     exportData,
     downloadTemplate,
-    clearAllData
+    clearAllData,
   };
 };

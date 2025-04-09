@@ -12,9 +12,9 @@ import {
   ReferenceLine,
   Brush
 } from 'recharts';
-import { WeightEntry } from '../../types/weightData';
-import { formatValue } from '../../utils/calculations';
-import { useMetrics } from '../../contexts/MetricsContext';
+import { WeightEntry } from '../../types/weight-data.types';
+import { formatValue } from '../../utils/caclulations.utils';
+import { useMetrics } from '../../contexts/metrics.context';
 
 interface WeightChartProps {
   data: WeightEntry[] | null | undefined;
@@ -24,7 +24,7 @@ interface WeightChartProps {
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   const { darkMode } = useMetrics();
-  
+
   if (!active || !payload || !payload.length) return null;
 
   return (
@@ -45,22 +45,22 @@ export const WeightChart: React.FC<WeightChartProps> = ({
   goal,
 }) => {
   const { chartMetrics, defaultVisibleMetrics, availableMetrics, darkMode } = useMetrics();
-  
+
   // Local state to track which metrics are actively displayed
   const [activeMetrics, setActiveMetrics] = useState<string[]>([]);
-  
+
   // Initialize activeMetrics from defaultVisibleMetrics when component mounts
   useEffect(() => {
     // Filter defaultVisibleMetrics to only include metrics that are in chartMetrics
-    const validDefaultMetrics = defaultVisibleMetrics.filter(metric => 
+    const validDefaultMetrics = defaultVisibleMetrics.filter(metric =>
       chartMetrics.includes(metric)
     );
-    
+
     // If no valid default metrics, show all chart metrics
-    const initialActiveMetrics = validDefaultMetrics.length > 0 
-      ? validDefaultMetrics 
+    const initialActiveMetrics = validDefaultMetrics.length > 0
+      ? validDefaultMetrics
       : chartMetrics;
-    
+
     setActiveMetrics(initialActiveMetrics);
   }, [chartMetrics, defaultVisibleMetrics]);
 
@@ -135,11 +135,10 @@ export const WeightChart: React.FC<WeightChartProps> = ({
               <button
                 key={metric.key}
                 onClick={() => toggleMetric(metric.key)}
-                className={`px-2 py-1 text-xs rounded-full transition-colors ${
-                  activeMetrics.includes(metric.key)
-                    ? 'text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
+                className={`px-2 py-1 text-xs rounded-full transition-colors ${activeMetrics.includes(metric.key)
+                  ? 'text-white'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }`}
                 style={{
                   backgroundColor: activeMetrics.includes(metric.key)
                     ? metric.color
@@ -163,10 +162,10 @@ export const WeightChart: React.FC<WeightChartProps> = ({
               data={chartData}
               margin={{ top: 5, right: 30, left: 20, bottom: 0 }}
             >
-              <CartesianGrid 
-                strokeDasharray="3 3" 
+              <CartesianGrid
+                strokeDasharray="3 3"
                 opacity={0.3}
-                stroke={darkMode ? "#4B5563" : "#E5E7EB"} 
+                stroke={darkMode ? "#4B5563" : "#E5E7EB"}
               />
               <XAxis
                 dataKey="formattedDate"
@@ -179,7 +178,7 @@ export const WeightChart: React.FC<WeightChartProps> = ({
                 tick={{ fontSize: 12, fill: darkMode ? "#D1D5DB" : "#4B5563" }}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend 
+              <Legend
                 onClick={(e) => {
                   toggleMetric(e.dataKey as string);
                 }}

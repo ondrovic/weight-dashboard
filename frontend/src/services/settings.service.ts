@@ -1,18 +1,8 @@
-// src/services/settingsApi.ts
+// src/services/settings.service.ts
 import axios from 'axios';
+import { UserSettings } from '@/types/user-settings.types';
 
-const API_BASE_URL = import.meta.env.VITE_API_ENDPOINT || '/api/v1';
-
-// Define types
-export interface UserSettings {
-  userId: string;
-  displayName: string;
-  tableMetrics: string[];
-  chartMetrics: string[];
-  defaultVisibleMetrics: string[];
-  goalWeight: number | null;
-  darkMode?: boolean;
-}
+const API_BASE_URL = import.meta.env.VITE_API_ENDPOINT;
 
 /**
  * API service for user settings
@@ -30,7 +20,7 @@ export const settingsApi = {
       throw error;
     }
   },
-  
+
   /**
    * Update user settings
    */
@@ -43,42 +33,42 @@ export const settingsApi = {
       throw error;
     }
   },
-  
+
   /**
    * Update table metrics
    */
   async updateTableMetrics(tableMetrics: string[]): Promise<UserSettings> {
     return this.updateSettings({ tableMetrics });
   },
-  
+
   /**
    * Update chart metrics
    */
   async updateChartMetrics(chartMetrics: string[]): Promise<UserSettings> {
     return this.updateSettings({ chartMetrics });
   },
-  
+
   /**
    * Update default visible metrics
    */
   async updateDefaultVisibleMetrics(defaultVisibleMetrics: string[]): Promise<UserSettings> {
     return this.updateSettings({ defaultVisibleMetrics });
   },
-  
+
   /**
    * Update goal weight
    */
   async updateGoalWeight(goalWeight: number | null): Promise<UserSettings> {
     return this.updateSettings({ goalWeight });
   },
-  
+
   /**
    * Update dark mode setting
    */
   async updateDarkMode(darkMode: boolean): Promise<UserSettings> {
     return this.updateSettings({ darkMode });
   },
-  
+
   /**
    * Reset settings to defaults
    */

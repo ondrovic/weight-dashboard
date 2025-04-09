@@ -1,6 +1,6 @@
 // frontend/src/components/common/DarkModeToggle.tsx
 import React from 'react';
-import { useDarkMode } from '../../contexts/DarkModeProvider';
+import { useDarkMode } from '../../contexts/dark-mode-provider.context';
 
 interface SidebarDarkModeToggleProps {
   expanded?: boolean;

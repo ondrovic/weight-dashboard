@@ -1,6 +1,6 @@
 // frontend/src/components/weight/StatsCard.tsx
 import React from 'react';
-import { WeightStats } from '../../types/weightData';
+import { WeightStats } from '../../types/weight-data.types';
 
 interface StatsCardProps {
   stats: WeightStats | null;

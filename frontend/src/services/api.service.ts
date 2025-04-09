@@ -1,8 +1,8 @@
 // src/services/api.ts
 import axios from 'axios';
-import { WeightEntry, WeightStats, createEmptyWeightStats, processWeightData } from '../types/weightData';
+import { WeightEntry, WeightStats, createEmptyWeightStats, processWeightData } from '@/types/weight-data.types';
 
-const API_BASE_URL = import.meta.env.VITE_API_ENDPOINT || '/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_ENDPOINT;
 
 /**
  * API service for weight data

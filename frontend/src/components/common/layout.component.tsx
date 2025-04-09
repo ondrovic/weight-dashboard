@@ -1,8 +1,8 @@
 import React, { ReactNode, useState } from 'react';
-import { Sidebar } from './Sidebar';
-import { Footer } from './Footer';
-import { useSidebarState } from '../../contexts/SidebarContext'; // Adjusted import path
-import { MenuIcon } from './Icons';
+import { Sidebar } from './sidebar.component';
+import { Footer } from './footer.component';
+import { useSidebarState } from '../../contexts/sidebar.context'; // Adjusted import path
+import { MenuIcon } from './icons.component';
 
 interface LayoutProps {
   children: ReactNode;
@@ -18,11 +18,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Sidebar 
+      <Sidebar
         isMobileMenuOpen={isMobileMenuOpen}
         toggleMobileMenu={toggleMobileMenu}
       />
-      
+
       {/* Main content wrapper - adjusted padding and width based on sidebar state */}
       <div className={`flex flex-col transition-all duration-300 ${isExpanded ? 'md:pl-64' : 'md:pl-16'}`}>
         {/* Mobile header with menu button */}
