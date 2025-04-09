@@ -6,7 +6,7 @@ import { EditButton } from '@/components/weight/edit-button.component';
 import { DeleteButton } from '@/components/weight/delete-button.component';
 import { WeightDataForm } from '@/components/weight/weight-data-form.component';
 import { useMetrics } from '@/contexts/metrics.context';
-import { useConfirmation } from '@/contexts/confgirmation.context';
+import { useConfirmation } from '@/contexts/confirmation.context';
 
 // Type for sort direction
 type SortDirection = 'asc' | 'desc';

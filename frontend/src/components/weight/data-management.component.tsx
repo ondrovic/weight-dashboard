@@ -1,6 +1,6 @@
 // src/components/weight/DataManagement.tsx
 import React, { useState } from 'react';
-import { useConfirmation } from '@/contexts/confgirmation.context';
+import { useConfirmation } from '@/contexts/confirmation.context';
 import { weightApi } from '@/services/api.service';
 
 interface DataManagementProps {

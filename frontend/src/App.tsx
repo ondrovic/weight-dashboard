@@ -5,7 +5,7 @@ import { Layout } from './components/common/layout.component';
 import { MetricsProvider } from './contexts/metrics.context';
 import { DarkModeProvider } from './contexts/dark-mode-provider.context';
 import { SidebarProvider } from './contexts/sidebar.context';
-import { ConfirmationProvider } from './contexts/confgirmation.context';
+import { ConfirmationProvider } from './contexts/confirmation.context';
 import { WeightDashboardPage } from './pages/weight-dashboard.page';
 import { DataEntryPage } from './pages/data-entry.page';
 import { SettingsPage } from './pages/settings.page';

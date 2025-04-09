@@ -1,7 +1,7 @@
 // src/pages/SettingsPage.tsx
 import React, { useState } from 'react';
 import { useMetrics } from '@/contexts/metrics.context';
-import { useConfirmation } from '@/contexts/confgirmation.context';
+import { useConfirmation } from '@/contexts/confirmation.context';
 import { WeightGoalSettings } from '@/components/settings/weight-goal-settings.component';
 import { TableColumnsSettings } from '@/components/settings/table-columns-settings.component';
 import { ChartMetricsSettings } from '@/components/settings/chart-metrics-settings.component';
