@@ -1,7 +1,8 @@
 // src/pages/DataEntryPage.tsx
 import React, { useState } from 'react';
 import { useWeightData } from '@/hooks/use-weight-data.hook';
-import { DataTable } from '@/components/weight/data-table.component';
+// import { DataTable } from '@/components/weight/data-table.component';
+import { DataTable } from '@/components/data-table/DataTable';
 import { WeightDataForm } from '@/components/weight/weight-data-form.component';
 import { DataUpload } from '@/components/weight/data-upload.component';
 import { DataManagement } from '@/components/weight/data-management.component';
