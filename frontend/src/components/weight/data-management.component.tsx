@@ -1,10 +1,11 @@
-// src/components/weight/DataManagement.tsx
 import React, { useState } from 'react';
 import { useConfirmation } from '@/contexts/confirmation.context';
 import { weightApi } from '@/services/api.service';
+import { useToast } from '@/components/toast-notification/hooks/use-toast';
+import { ToastType } from '@/components/toast-notification/lib/toast.types';
 
 interface DataManagementProps {
-  onDataChange?: () => void;  // Callback to notify parent component of data changes
+  onDataChange?: () => void;
   loading: boolean;
 }
 
@@ -13,77 +14,81 @@ export const DataManagement: React.FC<DataManagementProps> = ({
   loading
 }) => {
   const { confirm } = useConfirmation();
-  const [localLoading, setLocalLoading] = useState(false);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
 
-  // Combined loading state
+  const [localLoading, setLocalLoading] = useState(false);
   const isLoading = loading || localLoading;
 
-  // Reset status messages
-  const resetStatus = () => {
-    setError(null);
-    setSuccess(null);
-  };
-
-  // Handle export
+  // Export weight data
   const handleExport = async () => {
     try {
-      resetStatus();
       setLocalLoading(true);
-
       await weightApi.exportWeightData();
-      setSuccess('Data exported successfully. Check your downloads folder.');
+      showToast({
+        message: 'Data exported successfully. Check your downloads folder.',
+        type: ToastType.Success,
+      });
     } catch (err) {
       console.error('Export error:', err);
-      setError('Failed to export data. Please try again.');
+      showToast({
+        message: 'Failed to export data. Please try again.',
+        type: ToastType.Error,
+      });
     } finally {
       setLocalLoading(false);
     }
   };
 
-  // Handle template download
+  // Download empty template
   const handleDownloadTemplate = async () => {
     try {
-      resetStatus();
       setLocalLoading(true);
-
       await weightApi.downloadWeightDataTemplate();
-      setSuccess('Template downloaded successfully. Check your downloads folder.');
+      showToast({
+        message: 'Template downloaded successfully. Check your downloads folder.',
+        type: ToastType.Success,
+      });
     } catch (err) {
       console.error('Template download error:', err);
-      setError('Failed to download template. Please try again.');
+      showToast({
+        message: 'Failed to download template. Please try again.',
+        type: ToastType.Error,
+      });
     } finally {
       setLocalLoading(false);
     }
   };
 
-  // Handle clear data with confirmation
+  // Confirm and clear all weight data
   const handleClearData = async () => {
     try {
-      resetStatus();
-
       const confirmed = await confirm({
         title: 'Clear All Data',
-        message: 'This action will permanently delete all your weight tracking data. This cannot be undone. Are you sure you want to continue?',
+        message:
+          'This action will permanently delete all your weight tracking data. This cannot be undone. Are you sure you want to continue?',
         confirmText: 'Yes, Delete Everything',
         cancelText: 'Cancel',
-        variant: 'danger'
+        variant: 'danger',
       });
 
       if (confirmed) {
         setLocalLoading(true);
         await weightApi.clearAllWeightData();
-        setSuccess('All data has been cleared successfully.');
+        showToast({
+          message: 'All data has been cleared successfully.',
+          type: ToastType.Success,
+        });
 
-        // Notify parent component if callback provided
         if (onDataChange) {
           onDataChange();
         }
       }
     } catch (err) {
       console.error('Clear data error:', err);
-      setError('An error occurred while clearing data.');
+      showToast({
+        message: 'An error occurred while clearing data.',
+        type: ToastType.Error,
+      });
     } finally {
       setLocalLoading(false);
     }
@@ -93,25 +98,11 @@ export const DataManagement: React.FC<DataManagementProps> = ({
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
       <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Manage Your Data</h2>
 
-      {success && (
-        <div className="mb-4 p-3 bg-green-50 dark:bg-green-900 dark:bg-opacity-20 text-green-800 dark:text-green-300 rounded-md">
-          {success}
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900 dark:bg-opacity-20 text-red-800 dark:text-red-300 rounded-md">
-          {error}
-        </div>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Export Data */}
         <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-sm">
           <h3 className="text-lg font-medium mb-3 text-gray-800 dark:text-gray-200">Export Data</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Download your data as a CSV file.
-          </p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">Download your data as a CSV file.</p>
           <button
             onClick={handleExport}
             disabled={isLoading}
@@ -124,9 +115,7 @@ export const DataManagement: React.FC<DataManagementProps> = ({
         {/* Download Template */}
         <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-sm">
           <h3 className="text-lg font-medium mb-3 text-gray-800 dark:text-gray-200">Download Template</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Get a CSV template.
-          </p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">Get a CSV template.</p>
           <button
             onClick={handleDownloadTemplate}
             disabled={isLoading}
@@ -136,7 +125,7 @@ export const DataManagement: React.FC<DataManagementProps> = ({
           </button>
         </div>
 
-        {/* Clear Data */}
+        {/* Clear All Data */}
         <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-sm">
           <h3 className="text-lg font-medium mb-3 text-gray-800 dark:text-gray-200">Clear All Data</h3>
           <p className="text-gray-600 dark:text-gray-400 mb-4">

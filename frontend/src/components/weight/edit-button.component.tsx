@@ -1,4 +1,3 @@
-// frontend/src/components/weight/EditButton.tsx
 import React from 'react';
 
 interface EditButtonProps {
@@ -12,25 +11,25 @@ export const EditButton: React.FC<EditButtonProps> = ({
   size = 'medium',
   className = ''
 }) => {
-  // Determine button size
   const sizeClasses = {
     small: 'p-1',
     medium: 'p-2',
     large: 'p-3'
   };
-  
+
   const iconSizes = {
     small: 'w-4 h-4',
     medium: 'w-5 h-5',
     large: 'w-6 h-6'
   };
-  
+
   return (
     <button
       type="button"
       onClick={onClick}
       className={`text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 rounded-md ${sizeClasses[size]} ${className}`}
       title="Edit"
+      aria-label="Edit record"
     >
       <svg
         className={iconSizes[size]}

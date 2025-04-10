@@ -1,35 +1,40 @@
-// frontend/src/components/settings/WeightGoalSettings.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMetrics } from '@/contexts/metrics.context';
+import { useToast } from '@/components/toast-notification/hooks/use-toast';
+import { ToastType } from '@/components/toast-notification/lib/toast.types';
 
 export const WeightGoalSettings: React.FC = () => {
   const { goalWeight, setGoalWeight, loading } = useMetrics();
   const [localGoalWeight, setLocalGoalWeight] = useState<string>(
     goalWeight !== null ? goalWeight.toString() : ''
   );
-  const [isSaved, setIsSaved] = useState(false);
 
-  // Update local state when context updates
-  React.useEffect(() => {
+  const { showToast } = useToast();
+
+  // Sync local state with context
+  useEffect(() => {
     setLocalGoalWeight(goalWeight !== null ? goalWeight.toString() : '');
   }, [goalWeight]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Convert to number or null
     const numericGoal = localGoalWeight ? parseFloat(localGoalWeight) : null;
 
     if (numericGoal !== null && (isNaN(numericGoal) || numericGoal <= 0)) {
-      alert('Please enter a valid weight goal (positive number)');
+      showToast({
+        message: 'Please enter a valid weight goal (positive number)',
+        type: ToastType.Error,
+      });
       return;
     }
 
     await setGoalWeight(numericGoal);
-    setIsSaved(true);
 
-    // Hide success message after 3 seconds
-    setTimeout(() => setIsSaved(false), 3000);
+    showToast({
+      message: 'Weight goal saved successfully!',
+      type: ToastType.Success,
+    });
   };
 
   return (
@@ -57,18 +62,12 @@ export const WeightGoalSettings: React.FC = () => {
           </p>
         </div>
 
-        {isSaved && (
-          <div className="mb-4 p-2 bg-green-50 text-green-700 rounded">
-            Weight goal saved successfully!
-          </div>
-        )}
-
         <button
           type="submit"
           disabled={loading}
           className={`w-full py-2 px-4 rounded-md text-white ${loading
-              ? 'bg-gray-400'
-              : 'bg-indigo-600 hover:bg-indigo-700'
+            ? 'bg-gray-400'
+            : 'bg-indigo-600 hover:bg-indigo-700'
             }`}
         >
           {loading ? 'Saving...' : 'Save Goal'}

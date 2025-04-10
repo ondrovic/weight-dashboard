@@ -1,6 +1,7 @@
-// frontend/src/components/settings/ChartMetricsSettings.tsx
 import React, { useState, useEffect } from 'react';
 import { useMetrics } from '@/contexts/metrics.context';
+import { useToast } from '@/components/toast-notification/hooks/use-toast';
+import { ToastType } from '@/components/toast-notification/lib/toast.types';
 
 export const ChartMetricsSettings: React.FC = () => {
   const {
@@ -9,50 +10,45 @@ export const ChartMetricsSettings: React.FC = () => {
     setChartMetrics,
     loading
   } = useMetrics();
-  const [isSaved, setIsSaved] = useState(false);
 
-  // Create a local state to track selections
+  const { showToast } = useToast();
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>(chartMetrics);
 
-  // Update local state when context updates
   useEffect(() => {
     setSelectedMetrics(chartMetrics);
   }, [chartMetrics]);
 
-  // Toggle a metric's selection status
   const toggleMetric = (key: string) => {
-    // Skip Date for chart metrics
     if (key === 'Date') return;
 
-    setSelectedMetrics(prev => {
-      if (prev.includes(key)) {
-        return prev.filter(k => k !== key);
-      } else {
-        return [...prev, key];
-      }
-    });
+    setSelectedMetrics(prev =>
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    );
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Remove Date from chart metrics (not needed for charts)
     const metrics = selectedMetrics.filter(key => key !== 'Date');
 
-    await setChartMetrics(metrics);
-    setIsSaved(true);
-
-    // Hide success message after 3 seconds
-    setTimeout(() => setIsSaved(false), 3000);
+    try {
+      await setChartMetrics(metrics);
+      showToast({
+        message: 'Chart metrics saved successfully!',
+        type: ToastType.Success,
+      });
+    } catch {
+      showToast({
+        message: 'Failed to save chart metrics.',
+        type: ToastType.Error,
+      });
+    }
   };
 
-  // Handle select all
   const selectAll = () => {
     setSelectedMetrics(availableMetrics.filter(m => m.key !== 'Date').map(m => m.key));
   };
 
-  // Handle select none
   const selectNone = () => {
     setSelectedMetrics([]);
   };
@@ -67,30 +63,32 @@ export const ChartMetricsSettings: React.FC = () => {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid gap-3 grid-cols-3">
-          {availableMetrics.filter(metric => metric.key !== 'Date').map(metric => (
-            <div
-              key={metric.key}
-              className="flex items-center p-3 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              <input
-                type="checkbox"
-                id={`chart-metric-${metric.key}`}
-                checked={selectedMetrics.includes(metric.key)}
-                onChange={() => toggleMetric(metric.key)}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded"
-              />
+          {availableMetrics
+            .filter(metric => metric.key !== 'Date')
+            .map(metric => (
               <div
-                className="w-3 h-3 ml-2 rounded-full"
-                style={{ backgroundColor: metric.color }}
-              />
-              <label
-                htmlFor={`chart-metric-${metric.key}`}
-                className="ml-2 text-gray-700 dark:text-gray-300"
+                key={metric.key}
+                className="flex items-center p-3 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
               >
-                {metric.name}
-              </label>
-            </div>
-          ))}
+                <input
+                  type="checkbox"
+                  id={`chart-metric-${metric.key}`}
+                  checked={selectedMetrics.includes(metric.key)}
+                  onChange={() => toggleMetric(metric.key)}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded"
+                />
+                <div
+                  className="w-3 h-3 ml-2 rounded-full"
+                  style={{ backgroundColor: metric.color }}
+                />
+                <label
+                  htmlFor={`chart-metric-${metric.key}`}
+                  className="ml-2 text-gray-700 dark:text-gray-300"
+                >
+                  {metric.name}
+                </label>
+              </div>
+            ))}
         </div>
 
         <div className="flex space-x-4">
@@ -109,12 +107,6 @@ export const ChartMetricsSettings: React.FC = () => {
             Select None
           </button>
         </div>
-
-        {isSaved && (
-          <div className="p-2 bg-green-50 text-green-700 dark:bg-green-900 dark:bg-opacity-20 dark:text-green-300 rounded">
-            Chart metrics saved successfully!
-          </div>
-        )}
 
         <button
           type="submit"

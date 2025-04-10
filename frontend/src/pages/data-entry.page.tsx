@@ -1,12 +1,12 @@
-// src/pages/DataEntryPage.tsx
 import React, { useState } from 'react';
 import { useWeightData } from '@/hooks/use-weight-data.hook';
-// import { DataTable } from '@/components/weight/data-table.component';
 import { DataTable } from '@/components/data-table/DataTable';
 import { WeightDataForm } from '@/components/weight/weight-data-form.component';
 import { DataUpload } from '@/components/weight/data-upload.component';
 import { DataManagement } from '@/components/weight/data-management.component';
 import { TabsComponent, TabItem } from '@/components/common/tabs.component';
+import { useToast } from '@/components/toast-notification/hooks/use-toast';
+import { ToastType } from '@/components/toast-notification/lib/toast.types';
 
 export const DataEntryPage: React.FC = () => {
   const {
@@ -20,17 +20,10 @@ export const DataEntryPage: React.FC = () => {
     refreshData
   } = useWeightData();
 
-  // Handle record update
-  const handleUpdateRecord = async (id: string, updateData: any): Promise<boolean> => {
-    return await updateWeightData(id, updateData);
-  };
+  const { showToast } = useToast();
 
-  // Handle record deletion
-  const handleDeleteRecord = async (id: string): Promise<boolean> => {
-    return await deleteWeightData(id);
-  };
+  const [activeTab, setActiveTab] = useState<string>('data');
 
-  // Define tabs
   const tabs: TabItem[] = [
     { id: 'data', label: 'Data', icon: 'table' },
     { id: 'add-record', label: 'Add Single Record', icon: 'plus' },
@@ -38,12 +31,40 @@ export const DataEntryPage: React.FC = () => {
     { id: 'manage', label: 'Manage', icon: 'cog' }
   ];
 
-  // Default active tab
-  const [activeTab, setActiveTab] = useState<string>(tabs[0].id);
+  const handleUpdateRecord = async (id: string, updateData: any): Promise<boolean> => {
+    try {
+      const success = await updateWeightData(id, updateData);
+      if (success) {
+        showToast({ message: 'Entry updated successfully.', type: ToastType.Success });
+      } else {
+        showToast({ message: 'Failed to update entry.', type: ToastType.Error });
+      }
+      return success;
+    } catch (err) {
+      console.error(err);
+      showToast({ message: 'An error occurred while updating.', type: ToastType.Error });
+      return false;
+    }
+  };
+
+  const handleDeleteRecord = async (id: string): Promise<boolean> => {
+    try {
+      const success = await deleteWeightData(id);
+      if (success) {
+        showToast({ message: 'Entry deleted successfully.', type: ToastType.Success });
+      } else {
+        showToast({ message: 'Failed to delete entry.', type: ToastType.Error });
+      }
+      return success;
+    } catch (err) {
+      console.error(err);
+      showToast({ message: 'An error occurred while deleting.', type: ToastType.Error });
+      return false;
+    }
+  };
 
   return (
     <div className="w-full">
-      {/* Error message */}
       {dataError && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           <p>{dataError}</p>
@@ -63,14 +84,12 @@ export const DataEntryPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Tabs Component */}
       <TabsComponent
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
 
-      {/* Tab Content */}
       <div className="mt-4">
         {activeTab === 'data' && (
           <DataTable
@@ -87,7 +106,6 @@ export const DataEntryPage: React.FC = () => {
             loading={dataLoading}
             expandedByDefault={true}
             isEditMode={false}
-          // No need for onCancel in add mode since there's no cancel button
           />
         )}
 

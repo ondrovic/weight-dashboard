@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useToast } from '@/components/toast-notification/hooks/use-toast';
+import { ToastType } from '@/components/toast-notification/lib/toast.types';
 
 interface TableActionsProps {
   selectedCount: number;
@@ -9,8 +11,47 @@ interface TableActionsProps {
 export const TableActions: React.FC<TableActionsProps> = ({
   selectedCount,
   onExportSelected,
-  onDeleteSelected
+  onDeleteSelected,
 }) => {
+  const { showToast } = useToast();
+  const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      await onExportSelected();
+      showToast({
+        message: 'Export started. Check your downloads folder.',
+        type: ToastType.Success,
+      });
+    } catch (err) {
+      console.error(err);
+      showToast({
+        message: 'Failed to export data.',
+        type: ToastType.Error,
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await onDeleteSelected();
+      // Toasts for delete assumed handled via confirmation dialog
+    } catch (err) {
+      console.error(err);
+      showToast({
+        message: 'An error occurred while deleting.',
+        type: ToastType.Error,
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (selectedCount === 0) return null;
 
   return (
@@ -20,17 +61,27 @@ export const TableActions: React.FC<TableActionsProps> = ({
       </span>
 
       <button
-        onClick={onExportSelected}
-        className="px-3 py-1 text-sm rounded-md bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
+        onClick={handleExport}
+        disabled={exporting}
+        className={`px-3 py-1 text-sm rounded-md text-white transition ${
+          exporting
+            ? 'bg-blue-400 dark:bg-blue-400 cursor-not-allowed'
+            : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+        }`}
       >
-        Export Selected
+        {exporting ? 'Exporting...' : 'Export Selected'}
       </button>
 
       <button
-        onClick={onDeleteSelected}
-        className="px-3 py-1 text-sm rounded-md bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white"
+        onClick={handleDelete}
+        disabled={deleting}
+        className={`px-3 py-1 text-sm rounded-md text-white transition ${
+          deleting
+            ? 'bg-red-400 dark:bg-red-400 cursor-not-allowed'
+            : 'bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600'
+        }`}
       >
-        Delete Selected
+        {deleting ? 'Deleting...' : 'Delete Selected'}
       </button>
     </div>
   );

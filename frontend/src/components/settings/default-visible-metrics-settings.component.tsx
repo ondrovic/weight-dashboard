@@ -1,6 +1,7 @@
-// src/components/settings/DefaultVisibleMetricsSettings.tsx
 import React, { useState, useEffect } from 'react';
 import { useMetrics } from '@/contexts/metrics.context';
+import { useToast } from '@/components/toast-notification/hooks/use-toast';
+import { ToastType } from '@/components/toast-notification/lib/toast.types';
 
 export const DefaultVisibleMetricsSettings: React.FC = () => {
   const {
@@ -11,53 +12,45 @@ export const DefaultVisibleMetricsSettings: React.FC = () => {
     loading
   } = useMetrics();
 
-  const [isSaved, setIsSaved] = useState(false);
-
-  // Create a local state to track selections
+  const { showToast } = useToast();
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>(defaultVisibleMetrics);
 
-  // Update local state when context updates
   useEffect(() => {
     setSelectedMetrics(defaultVisibleMetrics);
   }, [defaultVisibleMetrics]);
 
-  // Toggle a metric's selection status
   const toggleMetric = (key: string) => {
-    // Skip Date for chart metrics
     if (key === 'Date') return;
-
-    // Can only select metrics that are enabled in chartMetrics
     if (!chartMetrics.includes(key)) return;
 
-    setSelectedMetrics(prev => {
-      if (prev.includes(key)) {
-        return prev.filter(k => k !== key);
-      } else {
-        return [...prev, key];
-      }
-    });
+    setSelectedMetrics(prev =>
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    );
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Remove Date from chart metrics (not needed for charts)
     const metrics = selectedMetrics.filter(key => key !== 'Date');
 
-    await setDefaultVisibleMetrics(metrics);
-    setIsSaved(true);
-
-    // Hide success message after 3 seconds
-    setTimeout(() => setIsSaved(false), 3000);
+    try {
+      await setDefaultVisibleMetrics(metrics);
+      showToast({
+        message: 'Default visible metrics saved successfully!',
+        type: ToastType.Success,
+      });
+    } catch {
+      showToast({
+        message: 'Failed to save default visible metrics.',
+        type: ToastType.Error,
+      });
+    }
   };
 
-  // Handle select all
   const selectAll = () => {
     setSelectedMetrics(chartMetrics.filter(key => key !== 'Date'));
   };
 
-  // Handle select none
   const selectNone = () => {
     setSelectedMetrics([]);
   };
@@ -80,10 +73,11 @@ export const DefaultVisibleMetricsSettings: React.FC = () => {
               return (
                 <div
                   key={metric.key}
-                  className={`flex items-center p-2 rounded-md ${isEnabled
+                  className={`flex items-center p-2 rounded-md ${
+                    isEnabled
                       ? 'hover:bg-gray-50 dark:hover:bg-gray-700'
                       : 'opacity-50 cursor-not-allowed'
-                    }`}
+                  }`}
                 >
                   <input
                     type="checkbox"
@@ -99,8 +93,9 @@ export const DefaultVisibleMetricsSettings: React.FC = () => {
                   />
                   <label
                     htmlFor={`default-visible-${metric.key}`}
-                    className={`ml-2 text-gray-700 dark:text-gray-300 text-sm ${!isEnabled ? 'text-gray-400 dark:text-gray-500' : ''
-                      }`}
+                    className={`ml-2 text-gray-700 dark:text-gray-300 text-sm ${
+                      !isEnabled ? 'text-gray-400 dark:text-gray-500' : ''
+                    }`}
                   >
                     {metric.name}
                     {!isEnabled && (
@@ -111,15 +106,8 @@ export const DefaultVisibleMetricsSettings: React.FC = () => {
                   </label>
                 </div>
               );
-            })
-          }
+            })}
         </div>
-
-        {isSaved && (
-          <div className="p-2 bg-green-50 text-green-700 dark:bg-green-900 dark:bg-opacity-20 dark:text-green-300 rounded mb-4">
-            Default visible metrics saved successfully!
-          </div>
-        )}
 
         <div className="mt-auto">
           <div className="flex space-x-4 mb-4">

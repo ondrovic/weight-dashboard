@@ -194,39 +194,48 @@ export const weightApi = {
    */
   async exportWeightData(): Promise<void> {
     try {
-      // Make API request with appropriate headers to trigger file download
       const response = await axios.get(`${API_BASE_URL}/weight/export`, {
-        responseType: 'blob' // Important - this tells axios to handle the response as a file
+        responseType: 'blob',
       });
-
-      // Create a URL for the blob and trigger download
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+  
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
+  
       const link = document.createElement('a');
       link.href = url;
-
-      // Get filename from content-disposition header or use a default
-      const contentDisposition = response.headers['content-disposition'];
+  
+      // Default filename
       let filename = 'weight-data-export.csv';
-
+  
+      // Check content-disposition header for filename
+      const contentDisposition = response.headers['content-disposition'];
       if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
-        if (filenameMatch && filenameMatch.length === 2) {
-          filename = filenameMatch[1];
+        const match = contentDisposition.match(/filename\*?=([^;]+)/i);
+        if (match) {
+          const rawFilename = match[1].trim();
+  
+          // Handle RFC 5987 encoding (filename*=UTF-8''...)
+          if (rawFilename.toLowerCase().startsWith("utf-8''")) {
+            filename = decodeURIComponent(rawFilename.replace(/^utf-8''/, ''));
+          } else {
+            filename = rawFilename.replace(/['"]/g, ''); // strip quotes
+          }
         }
       }
-
+  
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
-
+  
       // Cleanup
-      link.remove();
+      document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting weight data:', error);
       throw error;
     }
   },
+  
 
   /**
    * Download a CSV template with the correct headers

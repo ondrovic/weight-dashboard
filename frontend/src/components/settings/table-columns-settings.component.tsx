@@ -1,6 +1,7 @@
-// frontend/src/components/settings/TableColumnsSettings.tsx
 import React, { useState, useEffect } from 'react';
 import { useMetrics } from '@/contexts/metrics.context';
+import { useToast } from '@/components/toast-notification/hooks/use-toast';
+import { ToastType } from '@/components/toast-notification/lib/toast.types';
 
 export const TableColumnsSettings: React.FC = () => {
   const {
@@ -9,52 +10,49 @@ export const TableColumnsSettings: React.FC = () => {
     setTableMetrics,
     loading
   } = useMetrics();
-  const [isSaved, setIsSaved] = useState(false);
 
-  // Create a local state to track selections
+  const { showToast } = useToast();
   const [selectedColumns, setSelectedColumns] = useState<string[]>(tableMetrics);
 
-  // Update local state when context updates
+  // Sync local state with context
   useEffect(() => {
     setSelectedColumns(tableMetrics);
   }, [tableMetrics]);
 
-  // Toggle a column's selection status
   const toggleColumn = (key: string) => {
-    if (key === 'Date') return; // Date is always required
+    if (key === 'Date') return;
 
-    setSelectedColumns(prev => {
-      if (prev.includes(key)) {
-        return prev.filter(k => k !== key);
-      } else {
-        return [...prev, key];
-      }
-    });
+    setSelectedColumns(prev =>
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    );
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Ensure Date column is always included
     let columns = selectedColumns;
     if (!columns.includes('Date')) {
       columns = ['Date', ...columns];
     }
 
-    await setTableMetrics(columns);
-    setIsSaved(true);
-
-    // Hide success message after 3 seconds
-    setTimeout(() => setIsSaved(false), 3000);
+    try {
+      await setTableMetrics(columns);
+      showToast({
+        message: 'Table columns saved successfully!',
+        type: ToastType.Success,
+      });
+    } catch (err) {
+      showToast({
+        message: 'Failed to save table columns. Please try again.',
+        type: ToastType.Error,
+      });
+    }
   };
 
-  // Handle select all
   const selectAll = () => {
     setSelectedColumns(availableMetrics.map(m => m.key));
   };
 
-  // Handle select none (except Date)
   const selectNone = () => {
     setSelectedColumns(['Date']);
   };
@@ -72,8 +70,11 @@ export const TableColumnsSettings: React.FC = () => {
           {availableMetrics.map(metric => (
             <div
               key={metric.key}
-              className={`flex items-center p-3 rounded-md ${metric.key === 'Date' ? 'bg-gray-100 dark:bg-gray-700' : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-                }`}
+              className={`flex items-center p-3 rounded-md ${
+                metric.key === 'Date'
+                  ? 'bg-gray-100 dark:bg-gray-700'
+                  : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
             >
               <input
                 type="checkbox"
@@ -89,8 +90,11 @@ export const TableColumnsSettings: React.FC = () => {
               />
               <label
                 htmlFor={`table-column-${metric.key}`}
-                className={`ml-2 ${metric.key === 'Date' ? 'text-gray-500 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'
-                  }`}
+                className={`ml-2 ${
+                  metric.key === 'Date'
+                    ? 'text-gray-500 dark:text-gray-400'
+                    : 'text-gray-700 dark:text-gray-300'
+                }`}
               >
                 {metric.name}
                 {metric.key === 'Date' && (
@@ -117,12 +121,6 @@ export const TableColumnsSettings: React.FC = () => {
             Select None
           </button>
         </div>
-
-        {isSaved && (
-          <div className="p-2 bg-green-50 text-green-700 dark:bg-green-900 dark:bg-opacity-20 dark:text-green-300 rounded">
-            Table columns saved successfully!
-          </div>
-        )}
 
         <button
           type="submit"
