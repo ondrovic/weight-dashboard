@@ -2,11 +2,11 @@
 import React, { useEffect } from 'react';
 import { useMetrics } from '@/contexts/metrics.context';
 import { useConfirmation } from '@/contexts/confirmation.context';
-import { WeightGoalSettings } from '@/components/settings/weight-goal-settings.component';
-import { TableColumnsSettings } from '@/components/settings/table-columns-settings.component';
-import { ChartMetricsSettings } from '@/components/settings/chart-metrics-settings.component';
-import { DefaultVisibleMetricsSettings } from '@/components/settings/default-visible-metrics-settings.component';
-import ResetSettings from '@/components/settings/reset-settings.component';
+import { ChartMetricsSettings } from '@/components/settings/chart-metrics-settings/ChartMetricsSettings';
+import { WeightGoalSettings } from '@/components/settings/weight-goal-settings/WeightGoalSettings';
+import { TableColumnsSettings } from '@/components/settings/table-columns-settings/TableColumnsSetting';
+import { DefaultVisibleMetricsSettings } from '@/components/settings/default-visible-metrics-settings/DefaultVisibleMetricsSetting';
+import { ResetSettings } from '@/components/settings/reset-settings/ResetSettings';
 import { useToast } from '@/components/toast-notification/hooks/use-toast';
 import { ToastType } from '@/components/toast-notification/lib/toast.types';
 

@@ -1,3 +1,5 @@
+import React from 'react';
+
 interface ResetSettingsProps {
   title?: string;
   description?: string;
@@ -6,7 +8,7 @@ interface ResetSettingsProps {
   buttonText?: string;
 }
 
-const ResetSettings: React.FC<ResetSettingsProps> = ({
+export const ResetSettings: React.FC<ResetSettingsProps> = ({
   title = 'Reset Settings',
   description = 'Reset all settings to their default values. This will affect your table columns, chart metrics, default visible metrics, and goals.',
   onReset,
@@ -37,5 +39,3 @@ const ResetSettings: React.FC<ResetSettingsProps> = ({
     </div>
   );
 };
-
-export default ResetSettings;
