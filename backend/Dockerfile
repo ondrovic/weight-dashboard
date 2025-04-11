@@ -11,7 +11,7 @@ ARG CORS_ORIGIN
 # Set environment variables
 ENV NODE_ENV=$NODE_ENV
 ENV PORT=$PORT
-ENV MONGO_URI=$MONGODB_URI
+ENV MONGODB_URI=$MONGODB_URI
 ENV CORS_ORIGIN=$CORS_ORIGIN
 
 # Copy package.json and package-lock.json

@@ -7,7 +7,7 @@ import {
   FileMetadata,
   FileValidationResult,
   ParsedFileResult
-} from '../types/Files
+} from '../types/file.types'
 import { v4 as uuidv4 } from 'uuid';
 
 /**

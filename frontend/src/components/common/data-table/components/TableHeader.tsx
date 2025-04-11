@@ -1,7 +1,7 @@
 import React from 'react';
-import { SortableField, SortDirection } from '../hooks/useTableSort';
+import { SortableField } from '../hooks/useTableSort';
 
-interface TableHeaderProps<T> {
+interface TableHeaderProps {
   visibleMetrics: Array<{
     key: string;
     name: string;
@@ -22,7 +22,7 @@ interface TableHeaderProps<T> {
   currentRowsCount: number;
 }
 
-export const TableHeader = <T extends Record<string, any>>({
+export const TableHeader = ({
   visibleMetrics,
   showActions,
   handleSortClick,
@@ -38,7 +38,7 @@ export const TableHeader = <T extends Record<string, any>>({
   clearSelection,
   totalRows,
   currentRowsCount
-}: TableHeaderProps<T>) => {
+}: TableHeaderProps) => {
   return (
     <thead className="bg-gray-50 dark:bg-gray-700">
       <tr>
