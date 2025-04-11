@@ -10,18 +10,17 @@ export default defineConfig({
     proxy: {
       // Proxy all /api requests to your backend server
       '/api': {
-        target: 'http://localhost:3001', // Change this to your backend server URL
+        target: process.env.VITE_API_TARGET || 'http://localhost:3001',
         changeOrigin: true,
         secure: false
       }
     },
     host: true, // Listen on all addresses
-    port: Number(process.env.VITE_PORT) || 5173,
+    port: Number(process.env.VITE_PORT) || 3000,
     strictPort: true, // Fail if port is in use
   },
   resolve: {
     alias: {
-      // '@': path.resolve(path.dirname(new URL(import.meta.url).pathname), './src'),
       '@': path.resolve(__dirname, 'src'),
     },
   },

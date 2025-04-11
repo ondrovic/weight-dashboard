@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useConfirmation } from '@/contexts/confirmation.context';
+import { useConfirmation } from '@/contexts/Confrimation';
 import { weightApi } from '@/services/api.service';
 import { useToast } from '@/components/toast-notification/hooks/use-toast';
 import { ToastType } from '@/components/toast-notification/lib/toast.types';

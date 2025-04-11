@@ -1,8 +1,8 @@
 import React, { ReactNode, useState } from 'react';
-import { Sidebar } from '@/components/common/sidebar.component';
-import { Footer } from '@/components/common/footer.component';
-import { useSidebarState } from '@/contexts/sidebar.context'; // Adjusted import path
-import { MenuIcon } from '@/components/common/icons.component';
+import { Sidebar } from '@/components/common/Sidebar';
+import { Footer } from '@/components/common/Footer';
+import { useSidebarState } from '@/contexts/Sidebar'; // Adjusted import path
+import { MenuIcon } from '@/components/common/Icons';
 
 interface LayoutProps {
   children: ReactNode;

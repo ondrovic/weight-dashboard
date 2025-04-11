@@ -1,5 +1,5 @@
-import { useWeightData } from '@/hooks/use-weight-data.hook';
-import { useMetrics } from '@/contexts/metrics.context';
+import { useWeightData } from '@/hooks/use-weight-data';
+import { useMetrics } from '@/contexts/Metrics';
 
 export const useDashboard = () => {
   const {

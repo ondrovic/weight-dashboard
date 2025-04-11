@@ -1,4 +1,4 @@
-import { useMetrics } from '@/contexts/metrics.context';
+import { useMetrics } from '@/contexts/Metrics';
 
 /**
  * Custom hook for data export functionality
@@ -54,7 +54,7 @@ export const useDataExport = <T extends Record<string, any>>() => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        
+
         link.setAttribute('href', url);
         link.setAttribute('download', `weight-data-export-${timestamp}.csv`);
         link.style.display = 'none';

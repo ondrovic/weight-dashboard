@@ -4,7 +4,7 @@ import { FilterPanel } from './FilterPanel';
 import { FilterTag } from './FilterTag';
 import { loadFilterPresets, saveFilterPresets } from './utils/FileStorage';
 import { generateId } from './utils/Filter';
-import { useConfirmation } from '@/contexts/confirmation.context';
+import { useConfirmation } from '@/contexts/Confrimation';
 
 interface FilterManagerProps {
   fieldOptions: { key: string; name: string }[];

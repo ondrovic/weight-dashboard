@@ -14,7 +14,7 @@ import {
 } from 'recharts';
 import { WeightEntry } from '@/types/weight-data.types';
 import { formatValue } from '@/utils/caclulations.utils';
-import { useMetrics } from '@/contexts/metrics.context';
+import { useMetrics } from '@/contexts/Metrics';
 
 interface WeightChartProps {
   data: WeightEntry[] | null | undefined;

@@ -1,7 +1,7 @@
 // src/pages/SettingsPage.tsx
 import React, { useEffect } from 'react';
-import { useMetrics } from '@/contexts/metrics.context';
-import { useConfirmation } from '@/contexts/confirmation.context';
+import { useMetrics } from '@/contexts/Metrics';
+import { useConfirmation } from '@/contexts/Confrimation';
 import { ChartMetricsSettings } from '@/components/settings/chart-metrics-settings/ChartMetricsSettings';
 import { WeightGoalSettings } from '@/components/settings/weight-goal-settings/WeightGoalSettings';
 import { TableColumnsSettings } from '@/components/settings/table-columns-settings/TableColumnsSetting';
@@ -24,7 +24,7 @@ export const SettingsPage: React.FC = () => {
       cancelText: 'Cancel',
       variant: 'danger',
     });
-  
+
     if (confirmed) {
       try {
         await resetToDefaults();

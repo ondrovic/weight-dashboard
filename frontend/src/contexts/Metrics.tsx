@@ -1,12 +1,12 @@
 // src/contexts/MetricsContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Metric } from '@/components/common/metric-selector.component';
+import { Metric } from '@/components/common/MetricSelector';
 import { settingsApi } from '@/services/settings.service';
 import {
   DEFAULT_CHART_METRICS,
   DEFAULT_TABLE_METRICS,
   DEFAULT_VISIBLE_METRICS
-} from '@/constants/metrics.contsants'
+} from '@/constants/Mertrics'
 // Define all available metrics
 export const availableMetrics: Metric[] = [
   { key: 'Date', name: 'Date', unit: '' },

@@ -1,9 +1,9 @@
 // frontend/src/components/common/Sidebar.tsx
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useSidebarState } from '@/contexts/sidebar.context';
-import { useDarkMode } from '@/contexts/dark-mode-provider.context';
-import { HomeIcon, DataIcon, SettingsIcon, ChevronLeftIcon, ChevronRightIcon, XIcon } from '@/components/common/icons.component';
+import { useSidebarState } from '@/contexts/Sidebar';
+import { useDarkMode } from '@/contexts/DarkMode';
+import { HomeIcon, DataIcon, SettingsIcon, ChevronLeftIcon, ChevronRightIcon, XIcon } from '@/components/common/Icons';
 
 interface SidebarProps {
   isMobileMenuOpen: boolean;

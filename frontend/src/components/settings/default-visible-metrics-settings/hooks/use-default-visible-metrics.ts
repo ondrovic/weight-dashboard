@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useMetrics } from '@/contexts/metrics.context';
+import { useMetrics } from '@/contexts/Metrics';
 import { useToast } from '@/components/toast-notification/hooks/use-toast';
 import { ToastType } from '@/components/toast-notification/lib/toast.types';
 

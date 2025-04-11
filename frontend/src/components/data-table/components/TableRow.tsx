@@ -1,5 +1,5 @@
-import { EditButton } from '@/components/weight/edit-button.component';
-import { DeleteButton } from '@/components/weight/delete-button.component';
+import { EditButton } from '@/components/weight/EditButton';
+import { DeleteButton } from '@/components/weight/DeleteButton';
 import { formatValue } from '@/utils/caclulations.utils';
 
 // Helper function to validate MongoDB ObjectId

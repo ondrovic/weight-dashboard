@@ -1,6 +1,6 @@
 // frontend/src/contexts/DarkModeProvider.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useMetrics } from './metrics.context';
+import { useMetrics } from './Metrics';
 
 type DarkModeContextType = {
   darkMode: boolean;

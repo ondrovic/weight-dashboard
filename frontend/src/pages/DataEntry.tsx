@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useWeightData } from '@/hooks/use-weight-data.hook';
+import { useWeightData } from '@/hooks/use-weight-data';
 import { DataTable } from '@/components/data-table/DataTable';
-import { WeightDataForm } from '@/components/weight/weight-data-form.component';
-import { DataUpload } from '@/components/weight/data-upload.component';
-import { DataManagement } from '@/components/weight/data-management.component';
-import { TabsComponent, TabItem } from '@/components/common/tabs.component';
+import { WeightDataForm } from '@/components/weight/DataForm';
+import { DataUpload } from '@/components/weight/DataUpload';
+import { DataManagement } from '@/components/weight/DataManagement';
+import { TabsComponent, TabItem } from '@/components/common/Tabs';
 import { useToast } from '@/components/toast-notification/hooks/use-toast';
 import { ToastType } from '@/components/toast-notification/lib/toast.types';
 
