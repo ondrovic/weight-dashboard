@@ -1,6 +1,7 @@
 // src/contexts/MetricsContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Metric } from '@/components/common/MetricSelector';
+// import { Metric } from '@/components/common/MetricSelector';
+import { Metric } from '@/components/metric-selector'
 import { settingsApi } from '@/services/settings.service';
 import {
   DEFAULT_CHART_METRICS,

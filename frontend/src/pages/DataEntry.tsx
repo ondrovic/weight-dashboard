@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useWeightData } from '@/hooks/use-weight-data';
-import { DataTable } from '@/components/data-table/DataTable';
+import { DataTable } from '@/components/common/data-table';
 import { WeightDataForm } from '@/components/weight/DataForm';
-import { DataUpload } from '@/components/weight/DataUpload';
+import { DataUpload } from '@/components/common/data-upload'
 import { DataManagement } from '@/components/weight/DataManagement';
-import { TabsComponent, TabItem } from '@/components/common/Tabs';
+import { Tabs, Tab } from '@/components/common/tabs';
 import { useToast } from '@/components/toast-notification/hooks/use-toast';
 import { ToastType } from '@/components/toast-notification/lib/toast.types';
 
@@ -24,7 +24,7 @@ export const DataEntryPage: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<string>('data');
 
-  const tabs: TabItem[] = [
+  const tabs: Tab[] = [
     { id: 'data', label: 'Data', icon: 'table' },
     { id: 'add-record', label: 'Add Single Record', icon: 'plus' },
     { id: 'upload', label: 'Upload Records', icon: 'upload' },
@@ -84,7 +84,7 @@ export const DataEntryPage: React.FC = () => {
         </p>
       </div>
 
-      <TabsComponent
+      <Tabs
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={setActiveTab}

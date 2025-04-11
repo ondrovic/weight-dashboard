@@ -1,6 +1,6 @@
 import React, { ReactNode, useState } from 'react';
 import { Sidebar } from '@/components/common/Sidebar';
-import { Footer } from '@/components/common/Footer';
+import { Footer } from '@/components/common/footer'
 import { useSidebarState } from '@/contexts/Sidebar'; // Adjusted import path
 import { MenuIcon } from '@/components/common/Icons';
 

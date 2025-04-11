@@ -1,6 +1,5 @@
-// frontend/src/contexts/ConfirmationContext.tsx
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { ConfirmationDialog } from '../components/common/ConfrimationDialog.tsx';
+import { ConfirmationDialog } from '@/components/common/dialog';
 
 interface ConfirmationOptions {
   title?: string;
