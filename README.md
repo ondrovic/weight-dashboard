@@ -21,6 +21,7 @@ This application converts raw exported data from a smart scale into a structured
 ## Technology Stack
 
 ### Backend
+
 - Node.js with Express
 - TypeScript
 - MongoDB with Mongoose ODM
@@ -29,6 +30,7 @@ This application converts raw exported data from a smart scale into a structured
 - File uploads with Multer
 
 ### Frontend
+
 - React 18
 - TypeScript
 - Vite for build tooling
@@ -37,6 +39,7 @@ This application converts raw exported data from a smart scale into a structured
 - Axios for API communication
 
 ### Infrastructure
+
 - Docker containerization
 - MongoDB container
 - Nginx for frontend serving
@@ -76,28 +79,41 @@ weight-tracker/
 
 - Docker and Docker Compose
 - Node.js 18+ (for local development)
+- PowerShell 7+ (for Windows) or Bash (for Unix-like systems)
 
 ### Installation and Setup
 
 1. Clone the repository:
+
    ```
    git clone <repository-url>
    cd weight-tracker
    ```
 
-2. Set up environment variables:
+2. Use the setup script to configure and start the application:
+
+   For Windows:
+
    ```
-   # Backend
-   cp backend/.env.example backend/.env
-   
-   # Frontend
-   cp frontend/.env.example frontend/.env
+   ./setup.ps1
    ```
 
-3. Start the application using Docker Compose:
+   For Unix-like systems:
+
    ```
-   docker-compose up -d
+   ./setup.sh
    ```
+
+   The setup script provides an interactive menu with the following options:
+
+   - Local Docker: Manage Docker containers and environment
+   - Local Development: Set up development environment
+   - Help: View help information
+
+3. Choose "Local Docker" and follow these steps:
+
+   - Select "Create Docker .env" to set up environment variables
+   - Select "Start all services" to launch the application
 
 4. Access the application:
    - Frontend: http://localhost
@@ -107,15 +123,206 @@ weight-tracker/
 
 ### Local Development
 
-#### Backend
-See [Local Dev Guide](local-dev-guide.md)
+The project includes helper scripts (`setup.ps1` for Windows and `setup.sh` for Unix-like systems) that automate common development tasks:
 
-#### Frontend
-```
-cd frontend
-npm install
-npm run dev
-```
+#### Local MongoDB Setup
+
+For local development, you'll need to set up your own MongoDB instance. Here's a recommended setup using Docker:
+
+1. Create a file named `init-mongo.js` with the following content:
+
+   ```javascript
+   db = db.getSiblingDB("weight_tracker");
+
+   // Create user
+   db.createUser({
+     user: "dev",
+     pwd: "devpass",
+     roles: [{ role: "readWrite", db: "weight_tracker" }],
+   });
+
+   // Create collections with validation
+   db.createCollection("usersettings", {
+     validator: {
+       $jsonSchema: {
+         bsonType: "object",
+         required: [
+           "userId",
+           "tableMetrics",
+           "chartMetrics",
+           "defaultVisibleMetrics",
+         ],
+         properties: {
+           userId: { bsonType: "string" },
+           displayName: { bsonType: "string" },
+           tableMetrics: { bsonType: "array", items: { bsonType: "string" } },
+           chartMetrics: { bsonType: "array", items: { bsonType: "string" } },
+           defaultVisibleMetrics: {
+             bsonType: "array",
+             items: { bsonType: "string" },
+           },
+           goalWeight: { bsonType: ["number", "null"] },
+           darkMode: { bsonType: "bool" },
+           createdAt: { bsonType: "date" },
+           updatedAt: { bsonType: "date" },
+         },
+       },
+     },
+   });
+
+   db.createCollection("weightdatas", {
+     validator: {
+       $jsonSchema: {
+         bsonType: "object",
+         required: [
+           "date",
+           "weight",
+           "bmi",
+           "bodyFatPercentage",
+           "visceralFat",
+           "subcutaneousFat",
+           "metabolicAge",
+           "heartRate",
+           "waterPercentage",
+           "boneMassPercentage",
+           "proteinPercentage",
+           "fatFreeWeight",
+           "boneMassLb",
+           "bmr",
+           "muscleMass",
+         ],
+         properties: {
+           date: { bsonType: "date" },
+           weight: { bsonType: "number" },
+           bmi: { bsonType: "number" },
+           bodyFatPercentage: { bsonType: "number" },
+           visceralFat: { bsonType: "number" },
+           subcutaneousFat: { bsonType: "number" },
+           metabolicAge: { bsonType: "number" },
+           heartRate: { bsonType: "number" },
+           waterPercentage: { bsonType: "number" },
+           boneMassPercentage: { bsonType: "number" },
+           proteinPercentage: { bsonType: "number" },
+           fatFreeWeight: { bsonType: "number" },
+           boneMassLb: { bsonType: "number" },
+           bmr: { bsonType: "number" },
+           muscleMass: { bsonType: "number" },
+           createdAt: { bsonType: "date" },
+           updatedAt: { bsonType: "date" },
+         },
+       },
+     },
+   });
+
+   // Create indexes
+   db.usersettings.createIndex({ userId: 1 }, { unique: true });
+   db.weightdatas.createIndex({ date: 1 });
+   ```
+
+2. Create a `docker-compose.dev.yml` file:
+
+   ```yaml
+   services:
+     mongodb:
+       image: mongo:latest
+       container_name: weight-tracker-mongodb
+       ports:
+         - "27017:27017"
+       environment:
+         MONGO_INITDB_ROOT_USERNAME: admin
+         MONGO_INITDB_ROOT_PASSWORD: password
+       volumes:
+         - mongodb_dev_data:/data/db
+         - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+
+     mongo-express:
+       image: mongo-express
+       container_name: mongo-express
+       ports:
+         - "8081:8081"
+       environment:
+         ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+         ME_CONFIG_MONGODB_ADMINPASSWORD: password
+         ME_CONFIG_MONGODB_SERVER: mongodb
+         ME_CONFIG_BASICAUTH_USERNAME: admin
+         ME_CONFIG_BASICAUTH_PASSWORD: password
+       depends_on:
+         - mongodb
+
+   volumes:
+     mongodb_dev_data:
+   ```
+
+3. Start the MongoDB containers:
+
+   ```bash
+   docker-compose -f docker-compose.dev.yml up -d
+   ```
+
+4. Access MongoDB Express at http://localhost:8081 to manage your database.
+
+5. Update your backend `.env` file to use the local MongoDB:
+   ```
+   MONGODB_URI=mongodb://dev:devpass@localhost:27017/weight_tracker
+   ```
+
+#### Using the Helper Scripts
+
+1. Start the helper script:
+
+   ```
+   # Windows
+   ./setup.ps1
+
+   # Unix-like systems
+   ./setup.sh
+   ```
+
+2. Choose "Local Development" from the main menu to access development options:
+   - Create .envs: Set up environment files for both frontend and backend
+   - Install dependencies: Install all required npm packages
+   - Clean dependencies: Remove node_modules and package-lock.json
+   - Deploy Backend: Start the backend server
+   - Deploy Frontend: Start the frontend development server
+   - Deploy Full Stack: Start both frontend and backend servers
+
+#### Manual Setup (Alternative)
+
+If you prefer to set up manually:
+
+1. Set up environment variables:
+
+   ```
+   # Backend
+   cp backend/.env.example backend/.env
+
+   # Frontend
+   cp frontend/.env.example frontend/.env
+   ```
+
+2. Install dependencies:
+
+   ```
+   # Backend
+   cd backend
+   npm install
+
+   # Frontend
+   cd frontend
+   npm install
+   ```
+
+3. Start the development servers:
+
+   ```
+   # Backend
+   cd backend
+   npm run dev
+
+   # Frontend
+   cd frontend
+   npm run dev
+   ```
 
 ## MongoDB Schema
 
@@ -146,7 +353,9 @@ The application uses the following MongoDB schema for weight data:
 ## Data Format
 
 ### Input Format (Raw Smart Scale Export)
+
 The application expects a CSV file with the following columns:
+
 - Time
 - Weight
 - BMI
@@ -164,7 +373,9 @@ The application expects a CSV file with the following columns:
 - Heart Rate
 
 ### Output Format (Processed Data)
+
 The data is transformed to the following format:
+
 - Date
 - Weight
 - BMI
@@ -183,13 +394,13 @@ The data is transformed to the following format:
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /api/weight | Get all weight data records |
-| GET | /api/weight/stats | Get weight statistics |
-| GET | /api/weight/range | Get weight data for a date range |
-| POST | /api/weight/upload | Upload and process raw data |
-| DELETE | /api/weight/:id | Delete a specific record |
+| Method | Endpoint           | Description                      |
+| ------ | ------------------ | -------------------------------- |
+| GET    | /api/weight        | Get all weight data records      |
+| GET    | /api/weight/stats  | Get weight statistics            |
+| GET    | /api/weight/range  | Get weight data for a date range |
+| POST   | /api/weight/upload | Upload and process raw data      |
+| DELETE | /api/weight/:id    | Delete a specific record         |
 
 ## License
 
