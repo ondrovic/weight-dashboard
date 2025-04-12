@@ -1,15 +1,31 @@
-import React from 'react';
-import { WeightStats, createEmptyWeightStats } from '@/types/weight-data.types';
+import React, { useMemo } from 'react';
+import { WeightStats, createEmptyWeightStats, WeightEntry } from '@/types/weight-data.types';
 
 interface StatsCardProps {
   stats: WeightStats | null;
   loading: boolean;
+  filteredData?: WeightEntry[] | null;
 }
 
 // Helper function to format values with proper decimal places
 const formatValue = (value: number | undefined, decimalPlaces: number = 1): string => {
   if (value === undefined || isNaN(value)) return "N/A";
   return value.toFixed(decimalPlaces);
+};
+
+// Helper to calculate statistics for a metric
+const calculateStats = (data: WeightEntry[], metric: keyof WeightEntry) => {
+  const values = data
+    .map(entry => entry[metric] as number | undefined)
+    .filter((val): val is number => val !== undefined && !isNaN(val));
+
+  if (values.length === 0) return { min: undefined, max: undefined, avg: undefined };
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
+
+  return { min, max, avg };
 };
 
 // Reusable stat display component
@@ -33,7 +49,57 @@ const StatItem: React.FC<{
   );
 };
 
-export const StatsCard: React.FC<StatsCardProps> = ({ stats, loading }) => {
+export const StatsCard: React.FC<StatsCardProps> = ({ 
+  stats, 
+  loading, 
+  filteredData 
+}) => {
+  // Calculate filtered stats if we have filtered data
+  const filteredStats = useMemo(() => {
+    if (!filteredData || filteredData.length === 0) {
+      return null;
+    }
+    
+    // Sort by date to get oldest and latest
+    const sortedData = [...filteredData].sort((a, b) => {
+      const parseDate = (dateStr: string) => {
+        const [month, day, year] = dateStr.split('-');
+        return new Date(`20${year}-${month}-${day}`).getTime();
+      };
+      
+      return parseDate(a.Date) - parseDate(b.Date);
+    });
+    
+    const oldest = sortedData[0];
+    const latest = sortedData[sortedData.length - 1];
+    
+    // Calculate stats for weight
+    const weightStats = calculateStats(sortedData, 'Weight');
+    
+    // Return stats object
+    return {
+      latest,
+      oldest,
+      count: sortedData.length,
+      stats: {
+        Weight: weightStats,
+        BMI: calculateStats(sortedData, 'BMI'),
+        "Body Fat %": calculateStats(sortedData, "Body Fat %"),
+        "V-Fat": calculateStats(sortedData, "V-Fat"),
+        "S-Fat": calculateStats(sortedData, "S-Fat"),
+        Age: calculateStats(sortedData, "Age"),
+        HR: calculateStats(sortedData, "HR"),
+        "Water %": calculateStats(sortedData, "Water %"),
+        "Bone Mass %": calculateStats(sortedData, "Bone Mass %"),
+        "Protien %": calculateStats(sortedData, "Protien %"),
+        "Fat Free Weight": calculateStats(sortedData, "Fat Free Weight"),
+        "Bone Mass LB": calculateStats(sortedData, "Bone Mass LB"),
+        BMR: calculateStats(sortedData, "BMR"),
+        "Muscle Mass": calculateStats(sortedData, "Muscle Mass")
+      }
+    };
+  }, [filteredData]);
+
   if (loading) {
     return (
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md animate-pulse transition-colors duration-200">
@@ -45,7 +111,10 @@ export const StatsCard: React.FC<StatsCardProps> = ({ stats, loading }) => {
     );
   }
 
-  if (!stats) {
+  // Use filteredStats if available, otherwise use the original stats
+  const effectiveStats = filteredStats || stats;
+
+  if (!effectiveStats) {
     return (
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md justify-center items-center flex flex-col h-full transition-colors duration-200">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Statistics</h2>
@@ -58,7 +127,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({ stats, loading }) => {
   const emptyStats = createEmptyWeightStats();
 
   // Extract the stats we need - with proper typing and fallbacks
-  const { latest = emptyStats.latest, oldest = emptyStats.oldest, count = 0, stats: statDetails = emptyStats.stats } = stats;
+  const { latest = emptyStats.latest, oldest = emptyStats.oldest, count = 0, stats: statDetails = emptyStats.stats } = effectiveStats;
   
   // Use the Weight stats with fallback
   const weightStats = statDetails.Weight || emptyStats.stats.Weight;
@@ -66,12 +135,22 @@ export const StatsCard: React.FC<StatsCardProps> = ({ stats, loading }) => {
   // Calculate weight change with proper fallbacks
   const latestWeight = latest.Weight;
   const oldestWeight = oldest.Weight;
-  const weightChange = latestWeight - oldestWeight;
-  const weightChangePercent = oldestWeight ? (weightChange / oldestWeight) * 100 : 0;
+  const weightChange = latestWeight !== undefined && oldestWeight !== undefined ? latestWeight - oldestWeight : 0;
+  const weightChangePercent = oldestWeight && weightChange ? (weightChange / oldestWeight) * 100 : 0;
+
+  // Date range info for display
+  const dateRangeInfo = filteredData && stats && filteredData.length > 0 && filteredData.length !== stats.count
+    ? `Showing ${filteredData.length} of ${stats.count} records`
+    : '';
 
   return (
     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md transition-colors duration-200">
-      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Statistics</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Statistics</h2>
+        {dateRangeInfo && (
+          <span className="text-xs text-gray-500 dark:text-gray-400">{dateRangeInfo}</span>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Current Weight Section */}

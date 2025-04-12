@@ -20,6 +20,9 @@ interface WeightChartProps {
   data: WeightEntry[] | null | undefined;
   height?: number;
   goal?: number;
+  onBrushChange?: (startIndex: number, endIndex: number) => void;
+  brushStartIndex?: number;
+  brushEndIndex?: number;
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -43,6 +46,9 @@ export const WeightChart: React.FC<WeightChartProps> = ({
   data,
   height = 400,
   goal,
+  onBrushChange,
+  brushStartIndex,
+  brushEndIndex
 }) => {
   const { chartMetrics, defaultVisibleMetrics, availableMetrics, darkMode } = useMetrics();
 
@@ -122,6 +128,13 @@ export const WeightChart: React.FC<WeightChartProps> = ({
     });
   };
 
+  // Default brush indices if not provided
+  const actualStartIndex = brushStartIndex !== undefined ? 
+    brushStartIndex : 0;
+  
+  const actualEndIndex = brushEndIndex !== undefined ? 
+    brushEndIndex : chartData.length > 0 ? chartData.length - 1 : 0;
+
   return (
     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md transition-colors duration-200">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
@@ -194,6 +207,15 @@ export const WeightChart: React.FC<WeightChartProps> = ({
                   const [month, day] = dateStr.split('-');
                   return `${month}/${day}`;
                 }}
+                startIndex={actualStartIndex}
+                endIndex={actualEndIndex}
+                onChange={(brushData) => {
+                  if (onBrushChange && 
+                      brushData.startIndex !== undefined && 
+                      brushData.endIndex !== undefined) {
+                    onBrushChange(brushData.startIndex, brushData.endIndex);
+                  }
+                }}
               />
 
               {availableMetrics
@@ -235,8 +257,10 @@ export const WeightChart: React.FC<WeightChartProps> = ({
       {chartData.length > 0 && (
         <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
           <p>
-            Showing data from {chartData[0].Date} to {chartData[chartData.length - 1].Date}
-            ({chartData.length} records)
+            Showing data from {chartData[actualStartIndex]?.Date || ''} to {chartData[actualEndIndex]?.Date || ''}
+            {actualStartIndex === 0 && actualEndIndex === chartData.length - 1 
+              ? ` (${chartData.length} records)` 
+              : ` (${actualEndIndex - actualStartIndex + 1} of ${chartData.length} records)`}
           </p>
         </div>
       )}

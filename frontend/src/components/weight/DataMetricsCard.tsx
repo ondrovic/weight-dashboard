@@ -1,8 +1,7 @@
 // frontend/src/components/weight/WeightMetricsCard.tsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import { WeightStats, WeightEntry, createEmptyWeightStats } from '@/types/weight-data.types';
 import {
-  calculateTotalWeightChange,
   calculateDaysBetween,
   calculateDailyRate,
   calculateCaloricBalance,
@@ -12,7 +11,8 @@ import {
 interface WeightMetricsCardProps {
   stats: WeightStats | null;
   loading: boolean;
-  goalWeight?: number; // Optional goal weight
+  goalWeight?: number;
+  filteredData?: WeightEntry[] | null;
 }
 
 // Progress bar component
@@ -53,8 +53,36 @@ const ProgressBar: React.FC<{
 export const WeightMetricsCard: React.FC<WeightMetricsCardProps> = ({
   stats,
   loading,
-  goalWeight
+  goalWeight,
+  filteredData
 }) => {
+  // Calculate filtered stats if we have filtered data
+  const filteredStats = useMemo(() => {
+    if (!filteredData || filteredData.length === 0) {
+      return null;
+    }
+    
+    // Sort by date to get oldest and latest
+    const sortedData = [...filteredData].sort((a, b) => {
+      const parseDate = (dateStr: string) => {
+        const [month, day, year] = dateStr.split('-');
+        return new Date(`20${year}-${month}-${day}`).getTime();
+      };
+      
+      return parseDate(a.Date) - parseDate(b.Date);
+    });
+    
+    const oldest = sortedData[0];
+    const latest = sortedData[sortedData.length - 1];
+    
+    // Return stats object
+    return {
+      latest,
+      oldest,
+      count: sortedData.length
+    };
+  }, [filteredData]);
+
   if (loading) {
     return (
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md animate-pulse transition-colors duration-200">
@@ -66,7 +94,10 @@ export const WeightMetricsCard: React.FC<WeightMetricsCardProps> = ({
     );
   }
 
-  if (!stats) {
+  // Use filteredStats if available, otherwise use the original stats
+  const effectiveStats = filteredStats || stats;
+
+  if (!effectiveStats) {
     return (
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md transition-colors duration-200">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Progress</h2>
@@ -76,7 +107,7 @@ export const WeightMetricsCard: React.FC<WeightMetricsCardProps> = ({
   }
 
   // Use safe defaults with empty stats
-  const safeStats = stats || createEmptyWeightStats();
+  const safeStats = effectiveStats || createEmptyWeightStats();
   const latest = safeStats.latest || {} as WeightEntry;
   const oldest = safeStats.oldest || {} as WeightEntry;
 
@@ -85,7 +116,15 @@ export const WeightMetricsCard: React.FC<WeightMetricsCardProps> = ({
   const oldestDate = oldest.Date || '';
   
   // Calculate metrics safely
-  const { change, percentChange, isLoss } = calculateTotalWeightChange(safeStats);
+  const totalWeightChange = latest.Weight !== undefined && oldest.Weight !== undefined 
+    ? latest.Weight - oldest.Weight 
+    : 0;
+  
+  const percentWeightChange = oldest.Weight && totalWeightChange
+    ? (totalWeightChange / oldest.Weight) * 100
+    : 0;
+    
+  const isLoss = totalWeightChange < 0;
   
   // Only calculate if we have valid dates
   const days = (latestDate && oldestDate) 
@@ -101,7 +140,7 @@ export const WeightMetricsCard: React.FC<WeightMetricsCardProps> = ({
       )
     : 0;
     
-  const caloricBalance = calculateCaloricBalance(change, days);
+  const caloricBalance = calculateCaloricBalance(totalWeightChange, days);
 
   // Calculate body composition changes safely
   const latestWeight = latest.Weight || 0;
@@ -117,9 +156,19 @@ export const WeightMetricsCard: React.FC<WeightMetricsCardProps> = ({
   const oldestMuscleMass = oldest["Muscle Mass"] || 0;
   const muscleMassChange = latestMuscleMass - oldestMuscleMass;
 
+  // Date range info for display
+  const dateRangeInfo = filteredData && stats && filteredData.length > 0 && filteredData.length !== stats.count
+    ? `Showing ${filteredData.length} of ${stats.count} records`
+    : '';
+
   return (
     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md transition-colors duration-200">
-      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Progress</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Progress</h2>
+        {dateRangeInfo && (
+          <span className="text-xs text-gray-500 dark:text-gray-400">{dateRangeInfo}</span>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Weight changes */}
@@ -127,7 +176,7 @@ export const WeightMetricsCard: React.FC<WeightMetricsCardProps> = ({
           <div>
             <h3 className="text-md font-medium text-gray-700 dark:text-gray-200">Total Changes</h3>
             <p className={`text-xl font-semibold ${isLoss ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {isLoss ? '-' : '+'}{Math.abs(change).toFixed(1)} lbs ({formatValue(percentChange, 1)}%)
+              {isLoss ? '-' : '+'}{Math.abs(totalWeightChange).toFixed(1)} lbs ({formatValue(percentWeightChange, 1)}%)
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-400">Over {days} days</p>
           </div>

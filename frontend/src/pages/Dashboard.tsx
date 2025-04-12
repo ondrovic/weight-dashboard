@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDashboard } from '@/hooks/use-dashboard';
 import { WeightChart } from '@/components/weight/DataChart';
 import { StatsCard } from '@/components/weight/StatsCard';
 import { WeightMetricsCard } from '@/components/weight/DataMetricsCard';
+import { WeightEntry } from '@/types/weight-data.types';
 
 export const WeightDashboardPage: React.FC = () => {
   const {
@@ -13,6 +14,53 @@ export const WeightDashboardPage: React.FC = () => {
     error,
     refreshData,
   } = useDashboard();
+
+  // State for the brush indices
+  const [brushIndices, setBrushIndices] = useState<{
+    startIndex: number;
+    endIndex: number;
+  }>({
+    startIndex: 0,
+    endIndex: 0
+  });
+
+  // Function to handle brush changes
+  const handleBrushChange = (startIndex: number, endIndex: number) => {
+    setBrushIndices({ startIndex, endIndex });
+  };
+
+  // Initialize brush indices when data is loaded
+  useEffect(() => {
+    if (data && Array.isArray(data) && data.length > 0) {
+      setBrushIndices({
+        startIndex: 0,
+        endIndex: data.length - 1
+      });
+    }
+  }, [data]);
+
+  // Filter data based on brush indices
+  const getFilteredData = (): WeightEntry[] => {
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      return [];
+    }
+
+    // Sort data by date
+    const sortedData = [...data].sort((a, b) => {
+      const parseDate = (dateStr: string) => {
+        const [month, day, year] = dateStr.split('-');
+        return new Date(`20${year}-${month}-${day}`).getTime();
+      };
+      
+      return parseDate(a.Date) - parseDate(b.Date);
+    });
+    
+    // Return the sliced data based on brush indices
+    const { startIndex, endIndex } = brushIndices;
+    return sortedData.slice(startIndex, endIndex + 1);
+  };
+
+  const filteredData = getFilteredData();
 
   return (
     <div className="w-full">
@@ -30,15 +78,31 @@ export const WeightDashboardPage: React.FC = () => {
         </div>
       )}
 
-    {/* Stats cards row - reduced gap and margin bottom */}
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-        <StatsCard stats={stats} loading={loading} />
-        <WeightMetricsCard stats={stats} loading={loading} goalWeight={goalWeight} />
+      {/* Stats cards row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <StatsCard 
+          stats={stats} 
+          loading={loading} 
+          filteredData={filteredData}
+        />
+        <WeightMetricsCard 
+          stats={stats} 
+          loading={loading} 
+          goalWeight={goalWeight} 
+          filteredData={filteredData}
+        />
       </div>
 
-      {/* Weight chart - reduced margin bottom */}
+      {/* Weight chart */}
       <div className="mb-4">
-        <WeightChart data={data} goal={goalWeight} height={400} />
+        <WeightChart 
+          data={data} 
+          goal={goalWeight} 
+          height={400} 
+          onBrushChange={handleBrushChange}
+          brushStartIndex={brushIndices.startIndex}
+          brushEndIndex={brushIndices.endIndex}
+        />
       </div>
 
       {/* Additional information */}
@@ -55,6 +119,7 @@ export const WeightDashboardPage: React.FC = () => {
         </p>
         <p className="text-gray-700 dark:text-gray-300 mt-2">
           Your display preferences and goal weight are automatically saved to your account and will persist across devices.
+          Use the brush control at the bottom of the chart to analyze specific time periods - all statistics will update automatically.
         </p>
       </div>
     </div>
