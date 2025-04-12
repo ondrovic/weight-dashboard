@@ -1,11 +1,11 @@
-// src/components/weight/WeightDataForm.tsx
 import React, { useState, useEffect } from 'react';
 import { WeightEntry } from '@/types/weight-data.types';
+import { useToast } from '@/components/toast-notification/hooks/use-toast';
+import { ToastType } from '@/components/toast-notification/lib/toast.types';
 
-// Extended type to include UI-specific fields and allow indexing with string
 interface FormWeightEntry extends Partial<WeightEntry> {
   dateInputValue?: string;
-  [key: string]: any; // Add index signature to allow string indexing
+  [key: string]: any;
 }
 
 interface WeightDataFormProps {
@@ -18,8 +18,8 @@ interface WeightDataFormProps {
   isEditMode?: boolean;
 }
 
-export const WeightDataForm: React.FC<WeightDataFormProps> = ({ 
-  onSubmit, 
+export const WeightDataForm: React.FC<WeightDataFormProps> = ({
+  onSubmit,
   onCancel,
   initialData,
   recordId,
@@ -27,10 +27,9 @@ export const WeightDataForm: React.FC<WeightDataFormProps> = ({
   expandedByDefault = false,
   isEditMode = false
 }) => {
-  // Get current date in both formats
-  const { formattedDate, dateInputValue } = getCurrentDateFormats();
+  const { showToast } = useToast();
 
-  // Initial form data - use provided data or defaults
+  const { formattedDate, dateInputValue } = getCurrentDateFormats();
   const [formData, setFormData] = useState<FormWeightEntry>({
     Date: formattedDate,
     dateInputValue: dateInputValue,
@@ -47,59 +46,45 @@ export const WeightDataForm: React.FC<WeightDataFormProps> = ({
     "Fat Free Weight": undefined,
     "Bone Mass LB": undefined,
     BMR: undefined,
-    "Muscle Mass": undefined,
+    "Muscle Mass": undefined
   });
-  
-  const [formError, setFormError] = useState<string | null>(null);
-  const [formSuccess, setFormSuccess] = useState<boolean>(false);
+
   const [showAllFields, setShowAllFields] = useState<boolean>(expandedByDefault || isEditMode);
-  
-  // Initialize form with initial data if in edit mode
+
   useEffect(() => {
     if (initialData && isEditMode) {
       const formattedData: FormWeightEntry = { ...initialData };
-      
-      // Format the date for the input field if needed
+
       if (formattedData.Date) {
         const dateParts = formattedData.Date.split(/[-\/]/);
         if (dateParts.length === 3) {
           const month = dateParts[0].padStart(2, '0');
           const day = dateParts[1].padStart(2, '0');
-          // Handle both 2-digit and 4-digit years
-          const year = dateParts[2].length === 2 ? `20${dateParts[2]}` : dateParts[2];
-          
-          // Store the formatted date for HTML date input (YYYY-MM-DD)
+          const year = formattedData.Date.split('-')[2].length === 2 ? `20${dateParts[2]}` : dateParts[2];
           formattedData.dateInputValue = `${year}-${month}-${day}`;
         }
       }
-      
+
       setFormData(formattedData);
-      
-      // Show all fields in edit mode
       setShowAllFields(true);
     }
   }, [initialData, isEditMode]);
-  
-  // Get current date in both MM-DD-YY and YYYY-MM-DD formats
+
   function getCurrentDateFormats() {
     const now = new Date();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     const year = String(now.getFullYear()).slice(2);
     const fullYear = String(now.getFullYear());
-    
     return {
       formattedDate: `${month}-${day}-${year}`,
       dateInputValue: `${fullYear}-${month}-${day}`
     };
   }
-  
-  // Validates date string in MM-DD-YY format
+
   function isValidDateFormat(dateStr: string): boolean {
     const regex = /^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])-\d{2}$/;
     if (!regex.test(dateStr)) return false;
-    
-    // Check if the date is valid (e.g., not 02-31-24)
     const [month, day, year] = dateStr.split('-').map(num => parseInt(num, 10));
     const fullYear = 2000 + year;
     const date = new Date(fullYear, month - 1, day);
@@ -109,92 +94,68 @@ export const WeightDataForm: React.FC<WeightDataFormProps> = ({
       date.getDate() === day
     );
   }
-  
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     if (name === 'dateInputValue') {
-      // When the date input changes, update both the input value and the Date field
       if (value) {
-        const dateParts = value.split('-');
-        if (dateParts.length === 3) {
-          const year = dateParts[0].slice(2); // Get last 2 digits of year
-          const month = dateParts[1];
-          const day = dateParts[2];
-          
-          setFormData({
-            ...formData,
-            dateInputValue: value,
-            Date: `${month}-${day}-${year}`
-          });
-        }
-      } else {
+        const [year, month, day] = value.split('-');
         setFormData({
           ...formData,
           dateInputValue: value,
-          Date: ''
+          Date: `${month}-${day}-${year.slice(2)}`
         });
+      } else {
+        setFormData({ ...formData, dateInputValue: value, Date: '' });
       }
     } else if (name !== 'Date') {
-      // Handle numeric fields
       setFormData({
         ...formData,
         [name]: value === '' ? undefined : parseFloat(value)
       });
     } else {
-      setFormData({
-        ...formData,
-        [name]: value
-      });
-    }
-    
-    // Clear form messages when the user makes changes
-    if (formError || formSuccess) {
-      setFormError(null);
-      setFormSuccess(false);
+      setFormData({ ...formData, [name]: value });
     }
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormError(null);
-    
-    // Validate required fields
+
     if (!formData.Date) {
-      setFormError('Date is required');
+      showToast({ message: 'Date is required.', type: ToastType.Error });
       return;
     }
-    
-    // Validate date format
+
     if (!isValidDateFormat(formData.Date)) {
-      setFormError('Invalid date format. Please use MM-DD-YY');
+      showToast({ message: 'Invalid date format. Use MM-DD-YY.', type: ToastType.Error });
       return;
     }
-    
+
     if (!formData.Weight) {
-      setFormError('Weight is required');
+      showToast({ message: 'Weight is required.', type: ToastType.Error });
       return;
     }
-    
+
     try {
-      // Prepare data for submission (remove UI-specific fields)
       const submissionData: Partial<WeightEntry> = { ...formData };
       delete (submissionData as FormWeightEntry).dateInputValue;
-      
-      // In edit mode, pass both data and recordId. In add mode, just pass data
-      const success = isEditMode && recordId 
+
+      const success = isEditMode && recordId
         ? await onSubmit(submissionData, recordId)
         : await onSubmit(submissionData);
-        
+
       if (success) {
-        setFormSuccess(true);
-        
-        // In add mode, reset form to initial values
+        showToast({
+          message: isEditMode ? 'Record updated successfully!' : 'Weight entry saved successfully!',
+          type: ToastType.Success
+        });
+
         if (!isEditMode) {
           const { formattedDate, dateInputValue } = getCurrentDateFormats();
           setFormData({
             Date: formattedDate,
-            dateInputValue: dateInputValue,
+            dateInputValue,
             Weight: undefined,
             BMI: undefined,
             "Body Fat %": undefined,
@@ -208,27 +169,27 @@ export const WeightDataForm: React.FC<WeightDataFormProps> = ({
             "Fat Free Weight": undefined,
             "Bone Mass LB": undefined,
             BMR: undefined,
-            "Muscle Mass": undefined,
+            "Muscle Mass": undefined
           });
         }
-        
-        // Hide success message after 3 seconds
-        setTimeout(() => {
-          setFormSuccess(false);
-        }, 3000);
       } else {
-        setFormError('Failed to save entry');
+        showToast({
+          message: 'Failed to save entry.',
+          type: ToastType.Error
+        });
       }
     } catch (error) {
-      console.error(`Error ${isEditMode ? 'updating' : 'submitting'} weight entry:`, error);
-      setFormError(`An error occurred while ${isEditMode ? 'updating' : 'saving'} your weight entry`);
+      console.error(error);
+      showToast({
+        message: `An error occurred while ${isEditMode ? 'updating' : 'saving'} your weight entry.`,
+        type: ToastType.Error
+      });
     }
   };
-  
-  // Define the form fields
+
   const dateField = { name: 'dateInputValue', label: 'Date', type: 'date' };
   const weightField = { name: 'Weight', label: 'Weight (lbs)', type: 'number', step: '0.1' };
-  
+
   const optionalFields = [
     { name: 'BMI', label: 'BMI', type: 'number', step: '0.1' },
     { name: 'Body Fat %', label: 'Body Fat %', type: 'number', step: '0.1' },
@@ -242,18 +203,17 @@ export const WeightDataForm: React.FC<WeightDataFormProps> = ({
     { name: 'Fat Free Weight', label: 'Fat Free Weight (lbs)', type: 'number', step: '0.1' },
     { name: 'Bone Mass LB', label: 'Bone Mass (lbs)', type: 'number', step: '0.1' },
     { name: 'BMR', label: 'BMR (kcal)', type: 'number', step: '1' },
-    { name: 'Muscle Mass', label: 'Muscle Mass (lbs)', type: 'number', step: '0.1' },
+    { name: 'Muscle Mass', label: 'Muscle Mass (lbs)', type: 'number', step: '0.1' }
   ];
-  
+
   return (
     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md transition-colors duration-200">
       <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
         {isEditMode ? 'Edit Weight Record' : 'Add Weight Entry'}
       </h2>
-      
+
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          {/* Date field with improved handling */}
           <div className="mb-2">
             <label htmlFor={dateField.name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {dateField.label} *
@@ -268,8 +228,7 @@ export const WeightDataForm: React.FC<WeightDataFormProps> = ({
               required
             />
           </div>
-          
-          {/* Weight field */}
+
           <div className="mb-2">
             <label htmlFor={weightField.name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {weightField.label} *
@@ -286,10 +245,9 @@ export const WeightDataForm: React.FC<WeightDataFormProps> = ({
             />
           </div>
         </div>
-        
-        {/* Toggle for additional fields - only show in add mode if not expanded by default */}
+
         {!expandedByDefault && !isEditMode && (
-          <button 
+          <button
             type="button"
             onClick={() => setShowAllFields(!showAllFields)}
             className="mb-4 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 focus:outline-none"
@@ -297,8 +255,7 @@ export const WeightDataForm: React.FC<WeightDataFormProps> = ({
             {showAllFields ? 'Hide additional fields' : 'Show additional fields'}
           </button>
         )}
-        
-        {/* Additional fields */}
+
         {(showAllFields || expandedByDefault || isEditMode) && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
             {optionalFields.map(field => (
@@ -319,22 +276,7 @@ export const WeightDataForm: React.FC<WeightDataFormProps> = ({
             ))}
           </div>
         )}
-        
-        {/* Error message */}
-        {formError && (
-          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900 dark:bg-opacity-20 text-red-800 dark:text-red-300 rounded-md">
-            {formError}
-          </div>
-        )}
-        
-        {/* Success message */}
-        {formSuccess && (
-          <div className="mb-4 p-3 bg-green-50 dark:bg-green-900 dark:bg-opacity-20 text-green-800 dark:text-green-300 rounded-md">
-            {isEditMode ? 'Record updated successfully!' : 'Weight entry saved successfully!'}
-          </div>
-        )}
-        
-        {/* Submit button */}
+
         <div className="flex justify-end space-x-3">
           {isEditMode && (
             <button
@@ -345,7 +287,7 @@ export const WeightDataForm: React.FC<WeightDataFormProps> = ({
               Cancel
             </button>
           )}
-          
+
           <button
             type="submit"
             disabled={loading}
@@ -355,8 +297,8 @@ export const WeightDataForm: React.FC<WeightDataFormProps> = ({
                 : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:ring-blue-500'
             } ${isEditMode ? '' : 'w-full'}`}
           >
-            {loading 
-              ? (isEditMode ? 'Updating...' : 'Saving...') 
+            {loading
+              ? (isEditMode ? 'Updating...' : 'Saving...')
               : (isEditMode ? 'Update Record' : 'Save Entry')}
           </button>
         </div>
