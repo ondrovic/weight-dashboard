@@ -201,12 +201,8 @@ function New-DockerEnv {
         $varName = $parts[0].Trim()
         $varValue = $parts[1].Trim()
         
-        # Handle special cases for dynamic URL generation
-        if ($varName -eq 'VITE_API_URL') {
-            # Extract API_PORT from the env file
-            $apiPort = ($envExample | Where-Object { $_ -match '^API_PORT=' } | ForEach-Object { $_.Split('=')[1].Trim() })
-            $varValue = "http://localhost:$apiPort/api"
-        }
+        # Use the value from .env.example directly
+        # No special handling for VITE_API_URL anymore
         
         $envContent += "$varName=$varValue"
     }

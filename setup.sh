@@ -196,12 +196,7 @@ function new_docker_env {
         var_name=$(echo "$line" | cut -d'=' -f1)
         var_value=$(echo "$line" | cut -d'=' -f2-)
         
-        # Handle special cases for dynamic URL generation
-        if [[ $var_name == "VITE_API_URL" ]]; then
-            # Extract API_PORT from the env file
-            api_port=$(echo "$env_example" | grep "^API_PORT=" | cut -d'=' -f2)
-            var_value="http://localhost:$api_port/api"
-        fi
+        # No special handling for VITE_API_URL - use values directly from .env.example
         
         env_content+=("$var_name=$var_value")
     done <<< "$env_example"

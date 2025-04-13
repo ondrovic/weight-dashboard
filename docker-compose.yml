@@ -73,9 +73,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=${VITE_API_URL:-http://backend:3001}  # Backend address
-        - VITE_API_ENDPOINT=${API_ENDPOINT:-/api}
-        - VITE_API_TARGET=${VITE_API_TARGET:-server}
+        - VITE_API_URL=${VITE_API_URL}  # Backend address
+        - VITE_API_ENDPOINT=${API_ENDPOINT}
+        - VITE_API_TARGET=${VITE_API_TARGET}
     container_name: weight-tracker-frontend
     ports:
       - "${UI_PORT:-80}:80"

@@ -16,8 +16,8 @@ RUN rm -rf node_modules
 # Production stage
 FROM node:20-alpine
 WORKDIR /app
-ARG NODE_ENV=production
-ARG PORT=3001
+ARG NODE_ENV
+ARG PORT
 ARG MONGODB_URI
 ARG CORS_ORIGIN
 ENV NODE_ENV=$NODE_ENV
