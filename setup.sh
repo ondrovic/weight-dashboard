@@ -35,21 +35,25 @@ function show_docker_menu {
     echo "2. Start all services"
     echo "3. Stop all services"
     echo "4. Restart all services"
-    echo "5. Rebuild and restart all services"
-    echo "6. View logs"
-    echo "7. Back"
+    echo "5. Rebuild and restart backend"
+    echo "6. Rebuild and restart frontend"
+    echo "7. Rebuild and restart all services"
+    echo "8. View logs"
+    echo "9. Back"
     echo "==============================================="
     
-    choice=$(show_choice_menu 7)
+    choice=$(show_choice_menu 9)
     
     case $choice in
         1) new_docker_env ;;
         2) start_services ;;
         3) stop_services ;;
         4) restart_services ;;
-        5) update_services ;;
-        6) get_logs ;;
-        7) show_menu ;;
+        5) update_backend ;;
+        6) update_frontend ;;
+        7) update_services ;;
+        8) get_logs ;;
+        9) show_menu ;;
         *) 
             show_invalid_option
             show_docker_menu 
@@ -271,6 +275,30 @@ function get_logs {
     docker-compose logs -f
     
     # Return to menu after the user closes the logs
+    show_docker_menu
+}
+
+# Function to rebuild backend service
+function update_backend {
+    clear
+    echo "Rebuilding and restarting backend service..."
+    docker-compose build --no-cache backend
+    docker-compose up -d backend
+    echo "Backend service rebuilt and restarted."
+    
+    wait_script
+    show_docker_menu
+}
+
+# Function to rebuild frontend service
+function update_frontend {
+    clear
+    echo "Rebuilding and restarting frontend service..."
+    docker-compose build --no-cache frontend
+    docker-compose up -d frontend
+    echo "Frontend service rebuilt and restarted."
+    
+    wait_script
     show_docker_menu
 }
 

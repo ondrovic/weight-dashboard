@@ -26,28 +26,32 @@ function Show-Menu {
 
 function Show-DockerMenu {
     Clear-Host
-    Write-Host "==============================================="
+        Write-Host "==============================================="
     Write-Host "Weight Tracker Application Docker Management"
     Write-Host "==============================================="
     Write-Host "1. Create Docker .env"
     Write-Host "2. Start all services"
     Write-Host "3. Stop all services"
     Write-Host "4. Restart all services"
-    Write-Host "5. Rebuild and restart all services"
-    Write-Host "6. View logs"
-    Write-Host "7. Back"
+    Write-Host "5. Rebuild and restart backend"
+    Write-Host "6. Rebuild and restart frontend"
+    Write-Host "7. Rebuild and restart all services"
+    Write-Host "8. View logs"
+    Write-Host "9. Back"
     Write-Host "==============================================="
     
-    $choice = Show-ChoiceMenu -lastOptNum 7
+    $choice = Show-ChoiceMenu -lastOptNum 9
     
     switch ($choice) {
         1 { New-DockerEnv }
         2 { Start-Services }
         3 { Stop-Services }
         4 { Restart-Services }
-        5 { Update-Services }
-        6 { Get-Logs }
-        7 { Show-Menu }
+        5 { Update-Backend }
+        6 { Update-Frontend }
+        7 { Update-Services }
+        8 { Get-Logs }
+        9 { Show-Menu }
         default { 
             Show-InvalidOption
             Show-DockerMenu 
@@ -276,6 +280,30 @@ function Get-Logs {
     Start-Process -FilePath "powershell" -ArgumentList "-NoExit", "-Command", "docker compose logs -f" -Wait
     
     # Return to menu after the user closes the logs window
+    Show-DockerMenu
+}
+
+# Function to rebuild backend service
+function Update-Backend {
+    Clear-Host
+    Write-Host "Rebuilding and restarting backend service..."
+    docker compose build --no-cache backend
+    docker compose up -d backend
+    Write-Host "Backend service rebuilt and restarted."
+    
+    Wait-Script
+    Show-DockerMenu
+}
+
+# Function to rebuild frontend service
+function Update-Frontend {
+    Clear-Host
+    Write-Host "Rebuilding and restarting frontend service..."
+    docker compose build --no-cache frontend
+    docker compose up -d frontend
+    Write-Host "Frontend service rebuilt and restarted."
+    
+    Wait-Script
     Show-DockerMenu
 }
 
