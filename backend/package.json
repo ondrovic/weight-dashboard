@@ -8,8 +8,7 @@
         "build": "tsc",
         "start": "node dist/index.js",
         "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-        "swagger:generate-docs": "ts-node src/scripts/generate-swagger.ts",
-        "test": "jest"
+        "swagger:generate-docs": "ts-node src/scripts/generate-swagger.ts"
     },
     "dependencies": {
         "cors": "^2.8.5",

@@ -1,0 +1,52 @@
+# Node.js and build artifacts
+node_modules
+dist
+npm-debug.log
+yarn-error.log
+
+# Development and test files
+tests
+__tests__
+*.test.*
+*.spec.*
+coverage
+
+# Local configs and secrets
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+*.secret
+
+# Git and editor files
+.git
+.gitignore
+.github
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+
+# Documentation and misc
+README.md
+LICENSE
+CHANGELOG.md
+docs
+*.md
+
+# Docker and CI files
+Dockerfile
+docker-compose.yml
+Dockerfile*
+*.dockerignore
+.ci
+.circleci
+.gitlab-ci.yml
+
+# Logs and temporary files
+*.log
+tmp
+temp
+.cache

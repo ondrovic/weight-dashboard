@@ -35,6 +35,15 @@ export const configureServer = () => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
+  // Health check endpoint
+  app.get('/health', (req, res) => {
+    res.status(200).json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      service: 'weight-tracker-api'
+    });
+  });
+
   app.use('/api/v1/weight', weightRoutes);
   app.use('/api/v1/settings', settingsRoutes);
   
@@ -76,10 +85,22 @@ export const configureServer = () => {
   return { app, PORT };
 };
 
+// export const startServer = (app: express.Application, port: string | number) => {
+//   app.listen(port, () => {
+//     console.log(`✅ Server running on http://localhost:${port}`);
+//     console.log(`🩺 Health check available at http://localhost:${port}/health`);
+//     console.log(`📚 API docs available at http://localhost:${port}/api-docs`);
+//     console.log(`🧪 API testing available at http://localhost:${port}/api-test`);
+//   });
+// };
 export const startServer = (app: express.Application, port: string | number) => {
-  app.listen(port, () => {
-    console.log(`✅ Server running on http://localhost:${port}`);
-    console.log(`📚 API docs available at http://localhost:${port}/api-docs`);
-    console.log(`🧪 API testing available at http://localhost:${port}/api-test`);
+  const normalizedPort = typeof port === 'string' ? parseInt(port, 10) : port;
+  const host = process.env.HOST || '0.0.0.0';
+
+  app.listen(normalizedPort, host, () => {
+    console.log(`✅ Server running on http://${host}:${normalizedPort}`);
+    console.log(`🩺 Health check available at http://${host}:${normalizedPort}/health`);
+    console.log(`📚 API docs available at http://${host}:${normalizedPort}/api-docs`);
+    console.log(`🧪 API testing available at http://${host}:${normalizedPort}/api-test`);
   });
 };
