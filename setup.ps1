@@ -156,26 +156,65 @@ function New-DevEnvs {
 
 #region Docker
 
-# Function to check if Docker and Docker Compose are installed
-function Find-Docker {
-    try {
-        $null = Get-Command docker -ErrorAction Stop
-    } catch {
-        Write-Host "Docker could not be found"
-        Write-Host "Please install Docker: https://docs.docker.com/get-docker/"
-        exit 1
+$script:ComposeExe = $null
+$script:ComposePreArgs = @()
+
+# Prefer Podman Compose, then Docker Compose (matches setup.sh)
+function Find-ContainerCompose {
+    $script:ComposeExe = $null
+    $script:ComposePreArgs = @()
+
+    if (Get-Command podman -ErrorAction SilentlyContinue) {
+        $null = podman compose version 2>$null 3>$null
+        if ($LASTEXITCODE -eq 0) {
+            $script:ComposeExe = 'podman'
+            $script:ComposePreArgs = @('compose')
+            return
+        }
+        if (Get-Command podman-compose -ErrorAction SilentlyContinue) {
+            $script:ComposeExe = 'podman-compose'
+            $script:ComposePreArgs = @()
+            return
+        }
     }
 
-    # For Docker Desktop on Windows, docker compose is now a subcommand
-    try {
-        $dockerComposeVersion = docker compose version
-        if ($null -eq $dockerComposeVersion) {
-            throw "Docker Compose not found"
+    if (Get-Command docker -ErrorAction SilentlyContinue) {
+        $null = docker compose version 2>$null 3>$null
+        if ($LASTEXITCODE -eq 0) {
+            $script:ComposeExe = 'docker'
+            $script:ComposePreArgs = @('compose')
+            return
         }
-    } catch {
-        Write-Host "Docker Compose could not be found"
-        Write-Host "Please install Docker Desktop with Docker Compose: https://docs.docker.com/desktop/install/windows-install/"
-        exit 1
+    }
+
+    if (Get-Command docker-compose -ErrorAction SilentlyContinue) {
+        $script:ComposeExe = 'docker-compose'
+        $script:ComposePreArgs = @()
+        return
+    }
+
+    Write-Host "Could not find a supported container Compose command."
+    Write-Host "Install Podman with 'podman compose', or Podman Compose (podman-compose), or Docker / Docker Compose."
+    Write-Host "- Podman: https://podman.io/docs/"
+    Write-Host "- Docker Compose: https://docs.docker.com/compose/install/"
+    exit 1
+}
+
+function Invoke-ProjectCompose {
+    [CmdletBinding()]
+    param (
+        [Parameter(ValueFromRemainingArguments = $true)]
+        [string[]]$PassthroughArgs
+    )
+
+    if ($null -eq $script:ComposeExe) {
+        Find-ContainerCompose
+    }
+
+    if ($script:ComposePreArgs.Count -gt 0) {
+        & $script:ComposeExe @script:ComposePreArgs @PassthroughArgs
+    } else {
+        & $script:ComposeExe @PassthroughArgs
     }
 }
 
@@ -219,7 +258,7 @@ function New-DockerEnv {
 function Start-Services {
     Clear-Host
     Write-Host "Starting services..."
-    docker compose up -d
+    Invoke-ProjectCompose up -d
     
     # Get UI_PORT from .env file
     $uiPort = (Get-Content .env | Where-Object { $_ -match "UI_PORT" } | ForEach-Object { $_.Split('=')[1] })
@@ -232,7 +271,7 @@ function Start-Services {
 function Restart-Services {
     Clear-Host
     Write-Host "Restarting services..."
-    docker compose restart
+    Invoke-ProjectCompose restart
     
     # Get UI_PORT from .env file
     $uiPort = (Get-Content .env | Where-Object { $_ -match "UI_PORT" } | ForEach-Object { $_.Split('=')[1] })
@@ -246,7 +285,7 @@ function Restart-Services {
 function Stop-Services {
     Clear-Host
     Write-Host "Stopping services..."
-    docker compose down
+    Invoke-ProjectCompose down
     Write-Host "Services stopped."
     
     Wait-Script
@@ -257,9 +296,9 @@ function Stop-Services {
 function Update-Services {
     Clear-Host
     Write-Host "Rebuilding and restarting services..."
-    docker compose down
-    docker compose build --no-cache
-    docker compose up -d
+    Invoke-ProjectCompose down
+    Invoke-ProjectCompose build --no-cache
+    Invoke-ProjectCompose up -d
     Write-Host "Services rebuilt and restarted."
     
     Wait-Script
@@ -272,10 +311,7 @@ function Get-Logs {
     Write-Host "Viewing logs (press Ctrl+C to exit)..."
     Write-Host "After pressing Ctrl+C, type 'exit' and press Enter to return to menu."
     
-    # Start docker compose logs in a new process
-    Start-Process -FilePath "powershell" -ArgumentList "-NoExit", "-Command", "docker compose logs -f" -Wait
-    
-    # Return to menu after the user closes the logs window
+    Invoke-ProjectCompose logs -f
     Show-DockerMenu
 }
 
@@ -283,8 +319,8 @@ function Get-Logs {
 function Update-Backend {
     Clear-Host
     Write-Host "Rebuilding and restarting backend service..."
-    docker compose build --no-cache backend
-    docker compose up -d backend
+    Invoke-ProjectCompose build --no-cache backend
+    Invoke-ProjectCompose up -d backend
     Write-Host "Backend service rebuilt and restarted."
     
     Wait-Script
@@ -295,8 +331,8 @@ function Update-Backend {
 function Update-Frontend {
     Clear-Host
     Write-Host "Rebuilding and restarting frontend service..."
-    docker compose build --no-cache frontend
-    docker compose up -d frontend
+    Invoke-ProjectCompose build --no-cache frontend
+    Invoke-ProjectCompose up -d frontend
     Write-Host "Frontend service rebuilt and restarted."
     
     Wait-Script
@@ -515,8 +551,8 @@ function Show-Help {
 
 #endregion
 
-# Check Docker installation
-Find-Docker
+# Resolve Podman Compose or Docker Compose
+Find-ContainerCompose
 
 # Main Menu
 Show-Menu

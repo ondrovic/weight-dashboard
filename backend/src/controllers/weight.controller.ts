@@ -158,6 +158,10 @@ export const uploadWeightData = async (req: Request, res: Response): Promise<voi
 
 export const updateWeightData = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
+  if (!isValidObjectId(id)) {
+    res.status(400).json({ error: 'Invalid ID format' });
+    return;
+  }
   const errors = validateUpdateData(req.body);
   if (errors.length) {
     res.status(400).json({ errors });
@@ -166,9 +170,33 @@ export const updateWeightData = async (req: Request, res: Response): Promise<voi
 
   try {
     const update = convertToDbFieldNames(req.body);
-    const updatedRecord = await WeightData.findByIdAndUpdate(id, update, { new: true });
-    if (!updatedRecord) res.status(404).json({ error: 'Record not found' });
-    else res.status(200).json(updatedRecord);
+    const doc = await WeightData.findById(id);
+    if (!doc) {
+      res.status(404).json({ error: 'Record not found' });
+      return;
+    }
+
+    Object.assign(doc, update);
+
+    // Ensure required fields exist to satisfy DB validators.
+    if (!doc.date) doc.date = new Date();
+    if (doc.weight === undefined) doc.weight = 0;
+    if (doc.bmi === undefined) doc.bmi = 0;
+    if (doc.bodyFatPercentage === undefined) doc.bodyFatPercentage = 0;
+    if (doc.visceralFat === undefined) doc.visceralFat = 0;
+    if (doc.subcutaneousFat === undefined) doc.subcutaneousFat = 0;
+    if (doc.metabolicAge === undefined) doc.metabolicAge = 0;
+    if (doc.heartRate === undefined) doc.heartRate = 0;
+    if (doc.waterPercentage === undefined) doc.waterPercentage = 0;
+    if (doc.boneMassPercentage === undefined) doc.boneMassPercentage = 0;
+    if (doc.proteinPercentage === undefined) doc.proteinPercentage = 0;
+    if (doc.fatFreeWeight === undefined) doc.fatFreeWeight = 0;
+    if (doc.boneMassLb === undefined) doc.boneMassLb = 0;
+    if (doc.bmr === undefined) doc.bmr = 0;
+    if (doc.muscleMass === undefined) doc.muscleMass = 0;
+
+    const saved = await doc.save();
+    res.status(200).json(saved);
   } catch (error) {
     res.status(500).json({ error: 'Error updating record', message: (error as Error).message });
   }

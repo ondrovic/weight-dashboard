@@ -40,10 +40,10 @@ This application converts raw exported data from a smart scale into a structured
 
 ### Infrastructure
 
-- Docker containerization
+- Docker/Podman containerization
 - MongoDB container
 - Nginx for frontend serving
-- Docker Compose for orchestration
+- Compose for orchestration (Docker Compose or Podman Compose)
 
 ## Project Structure
 
@@ -77,7 +77,7 @@ weight-tracker/
 
 ### Prerequisites
 
-- Docker and Docker Compose
+- Docker + Docker Compose, **or** Podman + Podman Compose
 - Node.js 18+ (for local development)
 - PowerShell 7+ (for Windows) or Bash (for Unix-like systems)
 
@@ -110,16 +110,31 @@ weight-tracker/
    - Local Development: Set up development environment
    - Help: View help information
 
-3. Choose "Local Docker" and follow these steps:
+3. Choose "Local Docker" and follow these steps (this option supports **Docker or Podman**):
 
    - Select "Create Docker .env" to set up environment variables
    - Select "Start all services" to launch the application
 
 4. Access the application:
-   - Frontend: http://localhost
-   - Backend API: http://localhost:3001
-   - API Documentation: http://localhost:3001/api-docs
-   - MongoDB (for development): mongodb://localhost:27017
+   - Frontend: `http://localhost:${UI_PORT}` (defaults to `81`)
+   - Backend API: `http://localhost:${API_PORT}` (defaults to `3001`)
+   - API Documentation (ReDoc): `http://localhost:${API_PORT}/api-docs`
+   - API Testing (Swagger UI): `http://localhost:${API_PORT}/api-test`
+   - MongoDB (for development): `mongodb://localhost:${MONGODB_PORT}` (defaults to `27017`)
+
+### Running with Podman (manual)
+
+If you prefer not to use the setup scripts, you can run the stack directly with Podman:
+
+```bash
+podman compose -f docker-compose.yml up -d --build
+```
+
+To view logs:
+
+```bash
+podman compose logs -f
+```
 
 ### Local Development
 
@@ -394,13 +409,17 @@ The data is transformed to the following format:
 
 ## API Endpoints
 
-| Method | Endpoint           | Description                      |
-| ------ | ------------------ | -------------------------------- |
-| GET    | /api/weight        | Get all weight data records      |
-| GET    | /api/weight/stats  | Get weight statistics            |
-| GET    | /api/weight/range  | Get weight data for a date range |
-| POST   | /api/weight/upload | Upload and process raw data      |
-| DELETE | /api/weight/:id    | Delete a specific record         |
+The API is versioned under `API_ENDPOINT` (default: `/api/v1`).
+
+| Method | Endpoint                     | Description                      |
+| ------ | ---------------------------- | -------------------------------- |
+| GET    | /api/v1/weight               | Get all weight data records      |
+| GET    | /api/v1/weight/stats         | Get weight statistics            |
+| GET    | /api/v1/weight/range         | Get weight data for a date range |
+| POST   | /api/v1/weight/upload        | Upload and process raw data      |
+| DELETE | /api/v1/weight/:id           | Delete a specific record         |
+| GET    | /api/v1/settings             | Get user settings                |
+| PUT    | /api/v1/settings             | Update user settings             |
 
 ## License
 

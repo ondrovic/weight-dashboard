@@ -3,7 +3,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/common/Layout';
 import { MetricsProvider } from './contexts/Metrics';
-import { DarkModeProvider } from './contexts/DarkMode';
 import { SidebarProvider } from './contexts/Sidebar';
 import { ConfirmationProvider } from './contexts/Confrimation';
 import { WeightDashboardPage } from './pages/Dashboard';
@@ -18,19 +17,17 @@ const App: React.FC = () => {
     <Router>
       <ToastNotification>
         <MetricsProvider>
-          <DarkModeProvider>
-            <SidebarProvider>
-              <ConfirmationProvider>
-                <Layout>
-                  <Routes>
-                    <Route path="/" element={<WeightDashboardPage />} />
-                    <Route path="/data" element={<DataEntryPage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
-                  </Routes>
-                </Layout>
-              </ConfirmationProvider>
-            </SidebarProvider>
-          </DarkModeProvider>
+          <SidebarProvider>
+            <ConfirmationProvider>
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<WeightDashboardPage />} />
+                  <Route path="/data" element={<DataEntryPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                </Routes>
+              </Layout>
+            </ConfirmationProvider>
+          </SidebarProvider>
         </MetricsProvider>
       </ToastNotification>
     </Router>

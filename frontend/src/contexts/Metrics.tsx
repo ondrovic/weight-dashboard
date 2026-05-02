@@ -1,13 +1,45 @@
 // src/contexts/MetricsContext.tsx
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-// import { Metric } from '@/components/common/MetricSelector';
-import { Metric } from '@/components/metric-selector'
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  ReactNode,
+} from 'react';
+import { Metric } from '@/components/metric-selector';
 import { settingsApi } from '@/services/settings.service';
 import {
   DEFAULT_CHART_METRICS,
   DEFAULT_TABLE_METRICS,
-  DEFAULT_VISIBLE_METRICS
-} from '@/constants/Mertrics'
+  DEFAULT_VISIBLE_METRICS,
+} from '@/constants/Mertrics';
+
+const THEME_PREFERENCE_KEY = 'themePreference';
+
+export type ThemePreference = 'system' | 'light' | 'dark';
+
+/** One-time migration from legacy keys; defaults to following the OS. */
+function readInitialThemePreference(): ThemePreference {
+  const existing = localStorage.getItem(THEME_PREFERENCE_KEY);
+  if (existing === 'light' || existing === 'dark' || existing === 'system') {
+    localStorage.removeItem('userPrefersDark');
+    return existing;
+  }
+
+  const legacyDarkMode = localStorage.getItem('darkMode');
+  if (legacyDarkMode !== null) {
+    const pref: ThemePreference = legacyDarkMode === 'true' ? 'dark' : 'light';
+    localStorage.setItem(THEME_PREFERENCE_KEY, pref);
+    localStorage.removeItem('darkMode');
+    localStorage.removeItem('userPrefersDark');
+    return pref;
+  }
+
+  localStorage.removeItem('userPrefersDark');
+  return 'system';
+}
+
 // Define all available metrics
 export const availableMetrics: Metric[] = [
   { key: 'Date', name: 'Date', unit: '' },
@@ -24,7 +56,7 @@ export const availableMetrics: Metric[] = [
   { key: 'Fat Free Weight', name: 'Fat Free Weight', color: '#A78BFA', unit: 'lbs' },
   { key: 'Bone Mass LB', name: 'Bone Mass lbs', color: '#D946EF', unit: 'lbs' },
   { key: 'BMR', name: 'BMR', color: '#A855F7', unit: 'kcal' },
-  { key: 'Muscle Mass', name: 'Muscle Mass lbs', color: '#A855F7', unit: 'lbs' }
+  { key: 'Muscle Mass', name: 'Muscle Mass lbs', color: '#A855F7', unit: 'lbs' },
 ];
 
 interface MetricsContextType {
@@ -52,97 +84,98 @@ interface MetricsProviderProps {
   children: ReactNode;
 }
 
+function applyDarkModeClass(isDarkMode: boolean) {
+  if (isDarkMode) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+}
+
 export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) => {
-  // State for metrics and settings
   const [tableMetrics, setTableMetricsState] = useState<string[]>(DEFAULT_TABLE_METRICS);
   const [chartMetrics, setChartMetricsState] = useState<string[]>(DEFAULT_CHART_METRICS);
-  const [defaultVisibleMetrics, setDefaultVisibleMetricsState] = useState<string[]>(DEFAULT_VISIBLE_METRICS);
+  const [defaultVisibleMetrics, setDefaultVisibleMetricsState] = useState<string[]>(
+    DEFAULT_VISIBLE_METRICS,
+  );
   const [goalWeight, setGoalWeightState] = useState<number | null>(null);
-  const [darkMode, setDarkModeState] = useState<boolean>(false);
+  const [themePreference, setThemePreferenceState] = useState<ThemePreference>(
+    readInitialThemePreference,
+  );
+  const [systemMatches, setSystemMatches] = useState<boolean>(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia('(prefers-color-scheme: dark)').matches
+      : false,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Function to apply dark mode to the HTML element
-  const applyDarkMode = (isDarkMode: boolean) => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
-  
-  // Initialize dark mode based on system preference or stored setting
+  const darkMode = useMemo(
+    () =>
+      themePreference === 'system'
+        ? systemMatches
+        : themePreference === 'dark',
+    [themePreference, systemMatches],
+  );
+
   useEffect(() => {
-    const checkDarkMode = () => {
-      // Default to system preference if available
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      return prefersDark;
-    };
-    
-    // Set initial state
-    const initialDarkMode = checkDarkMode();
-    setDarkModeState(initialDarkMode);
-    applyDarkMode(initialDarkMode);
-    
-    // Add listener for system preference changes
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      // Only update if we don't have user preference stored
-      if (!localStorage.getItem('userPrefersDark')) {
-        const newDarkMode = e.matches;
-        setDarkModeState(newDarkMode);
-        applyDarkMode(newDarkMode);
-      }
-    };
-    
-    // Add event listener
-    mediaQuery.addEventListener('change', handleChange);
-    
-    // Clean up
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange);
-    };
-  }, []);
-  
-  // Effect to apply dark mode whenever it changes
-  useEffect(() => {
-    applyDarkMode(darkMode);
-    localStorage.setItem('userPrefersDark', String(darkMode));
+    applyDarkModeClass(darkMode);
   }, [darkMode]);
 
-  // Load settings from database on initial mount
+  useEffect(() => {
+    localStorage.setItem(THEME_PREFERENCE_KEY, themePreference);
+  }, [themePreference]);
+
+  useEffect(() => {
+    if (themePreference !== 'system') {
+      return;
+    }
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      setSystemMatches(e.matches);
+    };
+    setSystemMatches(mediaQuery.matches);
+    // Safari (and some embedded browsers) still require addListener/removeListener.
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange);
+    } else {
+      // eslint-disable-next-line deprecation/deprecation
+      mediaQuery.addListener(handleChange);
+    }
+    return () => {
+      if (typeof mediaQuery.removeEventListener === 'function') {
+        mediaQuery.removeEventListener('change', handleChange);
+      } else {
+        // eslint-disable-next-line deprecation/deprecation
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, [themePreference]);
+
   useEffect(() => {
     const fetchSettings = async () => {
       try {
         setLoading(true);
         const settings = await settingsApi.getSettings();
-        
-        // Update state with database values
+
         if (settings.tableMetrics && settings.tableMetrics.length > 0) {
           setTableMetricsState(settings.tableMetrics);
         }
-        
+
         if (settings.chartMetrics && settings.chartMetrics.length > 0) {
           setChartMetricsState(settings.chartMetrics);
         }
-        
+
         if (settings.defaultVisibleMetrics && settings.defaultVisibleMetrics.length > 0) {
           setDefaultVisibleMetricsState(settings.defaultVisibleMetrics);
         }
-        
+
         setGoalWeightState(settings.goalWeight);
-        
-        // Check if darkMode setting exists
-        if (settings.darkMode !== undefined) {
-          setDarkModeState(settings.darkMode);
-          applyDarkMode(settings.darkMode);
-        }
-        
+
         setError(null);
       } catch (err) {
         console.error('Failed to load settings:', err);
         setError('Failed to load settings from the server. Using default values.');
-        // Fall back to defaults if server fails
       } finally {
         setLoading(false);
       }
@@ -151,18 +184,13 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
     fetchSettings();
   }, []);
 
-  // Wrapper functions to update the metrics
   const setTableMetrics = async (metrics: string[]) => {
     try {
-      // Always keep Date metric selected for the table
-      const updatedMetrics = metrics.includes('Date') || metrics.length === 0 
-        ? metrics 
-        : ['Date', ...metrics];
-      
-      // Update local state immediately for responsive UI
+      const updatedMetrics =
+        metrics.includes('Date') || metrics.length === 0 ? metrics : ['Date', ...metrics];
+
       setTableMetricsState(updatedMetrics);
-      
-      // Update database
+
       await settingsApi.updateTableMetrics(updatedMetrics);
     } catch (err) {
       console.error('Failed to update table metrics:', err);
@@ -172,10 +200,8 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
 
   const setChartMetrics = async (metrics: string[]) => {
     try {
-      // Update local state immediately for responsive UI
       setChartMetricsState(metrics);
-      
-      // Update database
+
       await settingsApi.updateChartMetrics(metrics);
     } catch (err) {
       console.error('Failed to update chart metrics:', err);
@@ -185,10 +211,8 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
 
   const setDefaultVisibleMetrics = async (metrics: string[]) => {
     try {
-      // Update local state immediately for responsive UI
       setDefaultVisibleMetricsState(metrics);
-      
-      // Update database
+
       await settingsApi.updateDefaultVisibleMetrics(metrics);
     } catch (err) {
       console.error('Failed to update default visible metrics:', err);
@@ -198,50 +222,57 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
 
   const setGoalWeight = async (weight: number | null) => {
     try {
-      // Update local state immediately for responsive UI
       setGoalWeightState(weight);
-      
-      // Update database
+
       await settingsApi.updateGoalWeight(weight);
     } catch (err) {
       console.error('Failed to update goal weight:', err);
       setError('Failed to save goal weight to the server.');
     }
   };
-  
-  const setDarkMode = async (enabled: boolean) => {
+
+  const persistDarkModeToServer = async (enabled: boolean) => {
     try {
-      console.log(`Setting dark mode to: ${enabled}`);
-      // Update local state immediately for responsive UI
-      setDarkModeState(enabled);
-      
-      // Update database
       await settingsApi.updateDarkMode(enabled);
     } catch (err) {
       console.error('Failed to update dark mode setting:', err);
       setError('Failed to save dark mode setting to the server.');
     }
   };
-  
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
+
+  const setDarkMode = async (enabled: boolean) => {
+    setThemePreferenceState(enabled ? 'dark' : 'light');
+    await persistDarkModeToServer(enabled);
   };
 
-  // Function to reset to default settings
+  const toggleDarkMode = () => {
+    // Cycle system -> dark -> light -> system, so users can return to OS-following mode.
+    let nextPref: ThemePreference;
+    if (themePreference === 'system') {
+      nextPref = systemMatches ? 'light' : 'dark';
+    } else if (themePreference === 'dark') {
+      nextPref = 'light';
+    } else {
+      nextPref = 'system';
+    }
+
+    setThemePreferenceState(nextPref);
+    if (nextPref !== 'system') {
+      void persistDarkModeToServer(nextPref === 'dark');
+    }
+  };
+
   const resetToDefaults = async () => {
     try {
       setLoading(true);
-      
-      // Call the reset API
+
       const settings = await settingsApi.resetSettings();
-      
-      // Update local state with received default values
+
       setTableMetricsState(settings.tableMetrics);
       setChartMetricsState(settings.chartMetrics);
       setDefaultVisibleMetricsState(settings.defaultVisibleMetrics || DEFAULT_VISIBLE_METRICS);
       setGoalWeightState(settings.goalWeight);
-      // Don't reset dark mode to maintain user preference
-      
+
       setError(null);
     } catch (err) {
       console.error('Failed to reset settings:', err);
@@ -251,9 +282,8 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
     }
   };
 
-  // Helper function to get a metric by its key
   const getMetricByKey = (key: string): Metric | undefined => {
-    return availableMetrics.find(metric => metric.key === key);
+    return availableMetrics.find((metric) => metric.key === key);
   };
 
   return (
@@ -274,7 +304,7 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
         getMetricByKey,
         resetToDefaults,
         loading,
-        error
+        error,
       }}
     >
       {children}
@@ -282,7 +312,6 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
   );
 };
 
-// Custom hook to use the metrics context
 export const useMetrics = (): MetricsContextType => {
   const context = useContext(MetricsContext);
   if (context === undefined) {

@@ -22,6 +22,32 @@ export class SettingsService {
         goalWeight: DEFAULT_GOAL_WEIGHT,
         darkMode: DEFAULT_DARK_MODE
       });
+    } else {
+      // Self-heal legacy/incomplete settings docs to satisfy DB validators.
+      let changed = false;
+      if (!Array.isArray(settings.tableMetrics) || settings.tableMetrics.length === 0) {
+        settings.tableMetrics = DEFAULT_TABLE_METRICS;
+        changed = true;
+      }
+      if (!Array.isArray(settings.chartMetrics) || settings.chartMetrics.length === 0) {
+        settings.chartMetrics = DEFAULT_CHART_METRICS;
+        changed = true;
+      }
+      if (!Array.isArray(settings.defaultVisibleMetrics) || settings.defaultVisibleMetrics.length === 0) {
+        settings.defaultVisibleMetrics = DEFAULT_VISIBLE_METRICS;
+        changed = true;
+      }
+      if (settings.goalWeight === undefined) {
+        settings.goalWeight = DEFAULT_GOAL_WEIGHT;
+        changed = true;
+      }
+      if (settings.darkMode === undefined) {
+        settings.darkMode = DEFAULT_DARK_MODE;
+        changed = true;
+      }
+      if (changed) {
+        await settings.save();
+      }
     }
     return settings;
   }

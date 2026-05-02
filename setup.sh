@@ -160,19 +160,48 @@ function new_dev_envs {
 
 #region Docker
 
-# Function to check if Docker and Docker Compose are installed
-function find_docker {
-    if ! command -v docker &> /dev/null; then
-        echo "Docker could not be found"
-        echo "Please install Docker: https://docs.docker.com/get-docker/"
-        exit 1
+# Resolve Podman Compose or Docker Compose (same priority as setup.ps1)
+COMPOSE_BACKEND=""
+
+function find_container_compose {
+    COMPOSE_BACKEND=""
+
+    if command -v podman &> /dev/null; then
+        if podman compose version &> /dev/null; then
+            COMPOSE_BACKEND="podman"
+        elif command -v podman-compose &> /dev/null; then
+            COMPOSE_BACKEND="podman-compose"
+        fi
     fi
 
-    if ! command -v docker-compose &> /dev/null; then
-        echo "Docker Compose could not be found"
-        echo "Please install Docker Compose: https://docs.docker.com/compose/install/"
+    if [ -z "$COMPOSE_BACKEND" ]; then
+        if command -v docker &> /dev/null && docker compose version &> /dev/null; then
+            COMPOSE_BACKEND="docker-plugin"
+        elif command -v docker-compose &> /dev/null; then
+            COMPOSE_BACKEND="docker-legacy"
+        fi
+    fi
+
+    if [ -z "$COMPOSE_BACKEND" ]; then
+        echo "Could not find a supported container Compose command."
+        echo "Install Podman with 'podman compose', or Podman Compose (podman-compose), or Docker / Docker Compose."
+        echo "- Podman: https://podman.io/docs/"
+        echo "- Docker Compose: https://docs.docker.com/compose/install/"
         exit 1
     fi
+}
+
+function compose {
+    case "$COMPOSE_BACKEND" in
+        podman) podman compose "$@" ;;
+        podman-compose) podman-compose "$@" ;;
+        docker-plugin) docker compose "$@" ;;
+        docker-legacy) docker-compose "$@" ;;
+        *)
+            echo "compose: unsupported COMPOSE_BACKEND=$COMPOSE_BACKEND"
+            exit 1
+            ;;
+    esac
 }
 
 function new_docker_env {
@@ -213,7 +242,7 @@ function new_docker_env {
 function start_services {
     clear
     echo "Starting services..."
-    docker-compose up -d
+    compose up -d
     
     # Get UI_PORT from .env file
     ui_port=$(grep "UI_PORT" .env | cut -d'=' -f2)
@@ -226,7 +255,7 @@ function start_services {
 function restart_services {
     clear
     echo "Restarting services..."
-    docker-compose restart
+    compose restart
     
     # Get UI_PORT from .env file
     ui_port=$(grep "UI_PORT" .env | cut -d'=' -f2)
@@ -240,7 +269,7 @@ function restart_services {
 function stop_services {
     clear
     echo "Stopping services..."
-    docker-compose down
+    compose down
     echo "Services stopped."
     
     wait_script
@@ -251,9 +280,9 @@ function stop_services {
 function update_services {
     clear
     echo "Rebuilding and restarting services..."
-    docker-compose down
-    docker-compose build --no-cache
-    docker-compose up -d
+    compose down
+    compose build --no-cache
+    compose up -d
     echo "Services rebuilt and restarted."
     
     wait_script
@@ -266,8 +295,8 @@ function get_logs {
     echo "Viewing logs (press Ctrl+C to exit)..."
     echo "After pressing Ctrl+C, type 'exit' and press Enter to return to menu."
     
-    # Start docker compose logs
-    docker-compose logs -f
+    # Start compose logs
+    compose logs -f
     
     # Return to menu after the user closes the logs
     show_docker_menu
@@ -277,8 +306,8 @@ function get_logs {
 function update_backend {
     clear
     echo "Rebuilding and restarting backend service..."
-    docker-compose build --no-cache backend
-    docker-compose up -d backend
+    compose build --no-cache backend
+    compose up -d backend
     echo "Backend service rebuilt and restarted."
     
     wait_script
@@ -289,8 +318,8 @@ function update_backend {
 function update_frontend {
     clear
     echo "Rebuilding and restarting frontend service..."
-    docker-compose build --no-cache frontend
-    docker-compose up -d frontend
+    compose build --no-cache frontend
+    compose up -d frontend
     echo "Frontend service rebuilt and restarted."
     
     wait_script
@@ -536,8 +565,8 @@ function show_help {
 
 #endregion
 
-# Check Docker installation
-find_docker
+# Resolve Podman Compose or Docker Compose
+find_container_compose
 
 # Main Menu
 show_menu 
