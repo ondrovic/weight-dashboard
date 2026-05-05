@@ -125,7 +125,7 @@
 //     </div>
 //   );
 // };
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDashboard } from '@/hooks/use-dashboard';
 import { WeightChart } from '@/components/weight/DataChart';
 import { StatsCard } from '@/components/weight/StatsCard';
@@ -133,6 +133,7 @@ import { WeightMetricsCard } from '@/components/weight/DataMetricsCard';
 import { WeightEntry } from '@/types/weight-data.types';
 import { useToast } from '@/components/toast-notification/hooks/use-toast';
 import { ToastType } from '@/components/toast-notification/lib/toast.types';
+import { parseMmDdYy } from '@/utils/caclulations.utils';
 
 export const WeightDashboardPage: React.FC = () => {
   const { showToast } = useToast();
@@ -154,17 +155,58 @@ export const WeightDashboardPage: React.FC = () => {
     endIndex: 0
   });
 
+  const userHasSetBrushRef = useRef(false);
+
   // Function to handle brush changes
   const handleBrushChange = (startIndex: number, endIndex: number) => {
+    userHasSetBrushRef.current = true;
     setBrushIndices({ startIndex, endIndex });
   };
 
   // Initialize brush indices when data is loaded
   useEffect(() => {
     if (data && Array.isArray(data) && data.length > 0) {
+      if (userHasSetBrushRef.current) {
+        return;
+      }
+
+      const sortedData = [...data].sort((a, b) => {
+        const timeA = parseMmDdYy(a.Date)?.getTime() ?? Number.NEGATIVE_INFINITY;
+        const timeB = parseMmDdYy(b.Date)?.getTime() ?? Number.NEGATIVE_INFINITY;
+        return timeA - timeB;
+      });
+
+      const endIndex = Math.max(0, sortedData.length - 1);
+
+      const latestTime = sortedData.reduce((max, entry) => {
+        const t = parseMmDdYy(entry.Date)?.getTime();
+        return typeof t === 'number' && Number.isFinite(t) ? Math.max(max, t) : max;
+      }, Number.NEGATIVE_INFINITY);
+
+      if (!Number.isFinite(latestTime)) {
+        setBrushIndices({ startIndex: 0, endIndex });
+        return;
+      }
+
+      const windowStart = new Date(latestTime);
+      windowStart.setHours(0, 0, 0, 0);
+      windowStart.setDate(windowStart.getDate() - 90);
+      const windowStartTime = windowStart.getTime();
+
+      // Pick the last entry on/before the cutoff so the selected range spans
+      // at least 90 days even when there are gaps in data near the boundary.
+      let startIndex = -1;
+      for (let i = sortedData.length - 1; i >= 0; i -= 1) {
+        const t = parseMmDdYy(sortedData[i]?.Date)?.getTime();
+        if (typeof t === 'number' && Number.isFinite(t) && t <= windowStartTime) {
+          startIndex = i;
+          break;
+        }
+      }
+
       setBrushIndices({
-        startIndex: 0,
-        endIndex: data.length - 1
+        startIndex: startIndex === -1 ? 0 : startIndex,
+        endIndex
       });
     }
   }, [data]);
@@ -187,12 +229,9 @@ export const WeightDashboardPage: React.FC = () => {
 
     // Sort data by date
     const sortedData = [...data].sort((a, b) => {
-      const parseDate = (dateStr: string) => {
-        const [month, day, year] = dateStr.split('-');
-        return new Date(`20${year}-${month}-${day}`).getTime();
-      };
-      
-      return parseDate(a.Date) - parseDate(b.Date);
+      const timeA = parseMmDdYy(a.Date)?.getTime() ?? Number.NEGATIVE_INFINITY;
+      const timeB = parseMmDdYy(b.Date)?.getTime() ?? Number.NEGATIVE_INFINITY;
+      return timeA - timeB;
     });
     
     // Return the sliced data based on brush indices

@@ -13,7 +13,7 @@ import {
   Brush
 } from 'recharts';
 import { WeightEntry } from '@/types/weight-data.types';
-import { formatValue } from '@/utils/caclulations.utils';
+import { formatValue, parseMmDdYy } from '@/utils/caclulations.utils';
 import { useMetrics } from '@/contexts/Metrics';
 
 interface WeightChartProps {
@@ -75,12 +75,9 @@ export const WeightChart: React.FC<WeightChartProps> = ({
 
     return [...data]
       .sort((a, b) => {
-        const parseDate = (dateStr: string) => {
-          const [month, day, year] = dateStr.split('-');
-          return new Date(`20${year}-${month}-${day}`).getTime();
-        };
-
-        return parseDate(a.Date) - parseDate(b.Date);
+        const timeA = parseMmDdYy(a.Date)?.getTime() ?? Number.NEGATIVE_INFINITY;
+        const timeB = parseMmDdYy(b.Date)?.getTime() ?? Number.NEGATIVE_INFINITY;
+        return timeA - timeB;
       })
       .map(entry => ({
         ...entry,
