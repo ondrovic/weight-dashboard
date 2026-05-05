@@ -127,8 +127,10 @@ weight-tracker/
 If you prefer not to use the setup scripts, you can run the stack directly with Podman:
 
 ```bash
-podman compose -f docker-compose.yml up -d --build
+BUILDAH_FORMAT=docker podman compose -f docker-compose.yml up -d --build
 ```
+
+This ensures images are built in Docker format so `HEALTHCHECK` instructions in the Dockerfiles are preserved.
 
 To view logs:
 

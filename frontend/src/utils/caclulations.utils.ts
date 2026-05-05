@@ -80,17 +80,96 @@ export const calculateTotalWeightChange = (stats: WeightStats | null | undefined
   };
 };
 
+export const parseMmDdYy = (dateStr: string): Date | null => {
+  const [monthRaw, dayRaw, yearRaw] = dateStr.split('-');
+  const month = Number(monthRaw);
+  const day = Number(dayRaw);
+  const year2 = Number(yearRaw);
+
+  if (!Number.isFinite(month) || !Number.isFinite(day) || !Number.isFinite(year2)) {
+    return null;
+  }
+  if (month < 1 || month > 12 || day < 1 || day > 31 || year2 < 0 || year2 > 99) {
+    return null;
+  }
+
+  const fullYear = 2000 + year2;
+  const dt = new Date(fullYear, month - 1, day);
+
+  // Guard against JS Date rollover (e.g. 02-31-25 becomes Mar 3).
+  if (dt.getFullYear() !== fullYear || dt.getMonth() !== month - 1 || dt.getDate() !== day) {
+    return null;
+  }
+
+  return dt;
+};
+
+const pluralize = (n: number, singular: string, plural: string) => (n === 1 ? singular : plural);
+
+export const diffCalendarYmd = (
+  startDate: Date,
+  endDate: Date
+): { years: number; months: number; days: number } => {
+  const start = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+  const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+
+  if (start.getTime() > end.getTime()) {
+    return diffCalendarYmd(end, start);
+  }
+
+  let years = end.getFullYear() - start.getFullYear();
+  let months = end.getMonth() - start.getMonth();
+  let days = end.getDate() - start.getDate();
+
+  if (days < 0) {
+    // Borrow from the previous month of the end date.
+    const daysInPrevMonth = new Date(end.getFullYear(), end.getMonth(), 0).getDate();
+    days += daysInPrevMonth;
+    months -= 1;
+  }
+
+  if (months < 0) {
+    months += 12;
+    years -= 1;
+  }
+
+  return { years, months, days };
+};
+
+export const formatDurationBest = (startDateStr: string, endDateStr: string): string => {
+  const start = parseMmDdYy(startDateStr);
+  const end = parseMmDdYy(endDateStr);
+  if (!start || !end) {
+    return '0 days';
+  }
+
+  const totalDays = calculateDaysBetween(startDateStr, endDateStr);
+  const { years, months, days } = diffCalendarYmd(start, end);
+
+  if (totalDays < 14) {
+    return `${totalDays} ${pluralize(totalDays, 'day', 'days')}`;
+  }
+
+  if (totalDays < 84) {
+    const weeks = Math.round(totalDays / 7);
+    return `${weeks} ${pluralize(weeks, 'week', 'weeks')}`;
+  }
+
+  const totalMonths = years * 12 + months;
+  if (totalMonths < 24) {
+    return `${totalMonths} ${pluralize(totalMonths, 'month', 'months')}`;
+  }
+
+  return `${years} ${pluralize(years, 'year', 'years')}, ${months} ${pluralize(months, 'month', 'months')}, ${days} ${pluralize(days, 'day', 'days')}`;
+};
+
 /**
  * Calculate days between two date strings (format: MM-DD-YY)
  */
 export const calculateDaysBetween = (startDate: string, endDate: string): number => {
-  const parseDate = (dateStr: string): Date => {
-    const [month, day, year] = dateStr.split('-');
-    return new Date(`20${year}-${month}-${day}`);
-  };
-  
-  const start = parseDate(startDate);
-  const end = parseDate(endDate);
+  const start = parseMmDdYy(startDate);
+  const end = parseMmDdYy(endDate);
+  if (!start || !end) return 0;
   
   // Calculate difference in milliseconds, then convert to days
   const diffInMs = end.getTime() - start.getTime();

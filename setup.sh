@@ -193,8 +193,8 @@ function find_container_compose {
 
 function compose {
     case "$COMPOSE_BACKEND" in
-        podman) podman compose "$@" ;;
-        podman-compose) podman-compose "$@" ;;
+        podman) BUILDAH_FORMAT="${BUILDAH_FORMAT:-docker}" podman compose "$@" ;;
+        podman-compose) BUILDAH_FORMAT="${BUILDAH_FORMAT:-docker}" podman-compose "$@" ;;
         docker-plugin) docker compose "$@" ;;
         docker-legacy) docker-compose "$@" ;;
         *)

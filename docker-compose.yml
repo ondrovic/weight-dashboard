@@ -1,7 +1,9 @@
 services:
   # MongoDB service
   mongodb:
-    image: mongo:latest
+    # Avoid :latest to prevent unexpected major upgrades and instability.
+    # Keep the major version aligned with the existing data directory.
+    image: mongo:7.0.32
     container_name: weight-tracker-mongodb
     ports:
       - "${MONGODB_PORT:-27017}:27017"

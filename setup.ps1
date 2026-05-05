@@ -211,10 +211,28 @@ function Invoke-ProjectCompose {
         Find-ContainerCompose
     }
 
-    if ($script:ComposePreArgs.Count -gt 0) {
-        & $script:ComposeExe @script:ComposePreArgs @PassthroughArgs
-    } else {
-        & $script:ComposeExe @PassthroughArgs
+    $shouldForceDockerFormat = ($script:ComposeExe -eq 'podman' -or $script:ComposeExe -eq 'podman-compose')
+    $previousBuildahFormat = $null
+
+    if ($shouldForceDockerFormat) {
+        $previousBuildahFormat = $env:BUILDAH_FORMAT
+        $env:BUILDAH_FORMAT = 'docker'
+    }
+
+    try {
+        if ($script:ComposePreArgs.Count -gt 0) {
+            & $script:ComposeExe @script:ComposePreArgs @PassthroughArgs
+        } else {
+            & $script:ComposeExe @PassthroughArgs
+        }
+    } finally {
+        if ($shouldForceDockerFormat) {
+            if ($null -eq $previousBuildahFormat -or $previousBuildahFormat -eq '') {
+                Remove-Item Env:BUILDAH_FORMAT -ErrorAction SilentlyContinue
+            } else {
+                $env:BUILDAH_FORMAT = $previousBuildahFormat
+            }
+        }
     }
 }
 

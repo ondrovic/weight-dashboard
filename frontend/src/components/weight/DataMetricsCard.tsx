@@ -5,7 +5,8 @@ import {
   calculateDaysBetween,
   calculateDailyRate,
   calculateCaloricBalance,
-  formatValue
+  formatValue,
+  formatDurationBest
 } from '@/utils/caclulations.utils';
 
 interface WeightMetricsCardProps {
@@ -178,7 +179,7 @@ export const WeightMetricsCard: React.FC<WeightMetricsCardProps> = ({
             <p className={`text-xl font-semibold ${isLoss ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
               {isLoss ? '-' : '+'}{Math.abs(totalWeightChange).toFixed(1)} lbs ({formatValue(percentWeightChange, 1)}%)
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Over {days} days</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Over {formatDurationBest(oldestDate, latestDate)}</p>
           </div>
 
           <div>
