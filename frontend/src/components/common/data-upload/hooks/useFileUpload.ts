@@ -25,7 +25,7 @@ export const useFileUpload = (uploadData: (file: File) => Promise<boolean>) => {
       const rows = await readFileContents(file);
       setSelectedFile(file);
       setPreviewRows(rows);
-    } catch (error) {
+    } catch {
       showToast({
         message: 'Failed to read file contents',
         type: ToastType.Error,

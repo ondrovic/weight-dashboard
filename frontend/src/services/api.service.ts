@@ -4,6 +4,37 @@ import { WeightEntry, WeightStats, createEmptyWeightStats, processWeightData } f
 
 const API_BASE_URL = import.meta.env.VITE_API_ENDPOINT;
 
+/** Parse filename from Content-Disposition (RFC 5987 / quoted filename). */
+function parseContentDispositionFilename(
+  contentDisposition: string | undefined,
+  fallback: string
+): string {
+  if (!contentDisposition) {
+    return fallback;
+  }
+
+  const starMatch = contentDisposition.match(/filename\*=([^;]+)/i);
+  if (starMatch) {
+    const raw = starMatch[1].trim().replace(/^['"]|['"]$/g, '');
+    if (raw.toLowerCase().startsWith("utf-8''")) {
+      return decodeURIComponent(raw.slice(7));
+    }
+    return decodeURIComponent(raw);
+  }
+
+  const quotedMatch = contentDisposition.match(/filename="([^"]+)"/i);
+  if (quotedMatch) {
+    return quotedMatch[1];
+  }
+
+  const plainMatch = contentDisposition.match(/filename=([^;]+)/i);
+  if (plainMatch) {
+    return plainMatch[1].trim().replace(/^['"]|['"]$/g, '');
+  }
+
+  return fallback;
+}
+
 /**
  * API service for weight data
  */
@@ -204,24 +235,10 @@ export const weightApi = {
       const link = document.createElement('a');
       link.href = url;
   
-      // Default filename
-      let filename = 'weight-data-export.csv';
-  
-      // Check content-disposition header for filename
-      const contentDisposition = response.headers['content-disposition'];
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename\*?=([^;]+)/i);
-        if (match) {
-          const rawFilename = match[1].trim();
-  
-          // Handle RFC 5987 encoding (filename*=UTF-8''...)
-          if (rawFilename.toLowerCase().startsWith("utf-8''")) {
-            filename = decodeURIComponent(rawFilename.replace(/^utf-8''/, ''));
-          } else {
-            filename = rawFilename.replace(/['"]/g, ''); // strip quotes
-          }
-        }
-      }
+      const filename = parseContentDispositionFilename(
+        response.headers['content-disposition'],
+        'weight-data-export.csv'
+      );
   
       link.setAttribute('download', filename);
       document.body.appendChild(link);
@@ -252,16 +269,10 @@ export const weightApi = {
       const link = document.createElement('a');
       link.href = url;
 
-      // Get filename from content-disposition header or use a default
-      const contentDisposition = response.headers['content-disposition'];
-      let filename = 'weight-data-template.csv';
-
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
-        if (filenameMatch && filenameMatch.length === 2) {
-          filename = filenameMatch[1];
-        }
-      }
+      const filename = parseContentDispositionFilename(
+        response.headers['content-disposition'],
+        'weight-data-template.csv'
+      );
 
       link.setAttribute('download', filename);
       document.body.appendChild(link);

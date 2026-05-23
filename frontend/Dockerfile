@@ -1,16 +1,22 @@
-# Build stage
-FROM node:20-alpine AS build
+# Build stage — Node 22+ (uuid 14, ESLint 10, Vite 8 / Rolldown)
+FROM node:22-alpine AS build
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
+
+# Pin Yarn to match packageManager in package.json
+RUN corepack enable && corepack prepare yarn@1.22.22 --activate
+
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
+
 ARG VITE_API_URL
 ARG VITE_API_ENDPOINT
 ARG VITE_API_TARGET
 ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_API_ENDPOINT=$VITE_API_ENDPOINT
 ENV VITE_API_TARGET=$VITE_API_TARGET
+
 COPY . .
-RUN npm run build
+RUN yarn build
 
 # Production stage
 FROM nginx:alpine-slim

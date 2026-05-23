@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 /**
  * Custom hook for managing table pagination
  */
-export const useTablePagination = <T extends any>(data: T[] | null | undefined) => {
+export const useTablePagination = <T,>(data: T[] | null | undefined) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   

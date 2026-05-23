@@ -32,7 +32,7 @@ export const SettingsPage: React.FC = () => {
           message: 'All settings have been reset to their default values.',
           type: ToastType.Success,
         });
-      } catch (err) {
+      } catch {
         showToast({
           message: 'Failed to reset settings. Please try again.',
           type: ToastType.Error,

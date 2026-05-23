@@ -157,14 +157,12 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
     if (typeof mediaQuery.addEventListener === 'function') {
       mediaQuery.addEventListener('change', handleChange);
     } else {
-      // eslint-disable-next-line deprecation/deprecation
       mediaQuery.addListener(handleChange);
     }
     return () => {
       if (typeof mediaQuery.removeEventListener === 'function') {
         mediaQuery.removeEventListener('change', handleChange);
       } else {
-        // eslint-disable-next-line deprecation/deprecation
         mediaQuery.removeListener(handleChange);
       }
     };

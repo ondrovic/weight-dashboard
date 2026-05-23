@@ -30,7 +30,7 @@ export const readFileContents = (file: File): Promise<string[][]> => {
         const rows = text.split('\n').slice(0, 6);
         const parsedRows = rows.map(row => row.split(','));
         resolve(parsedRows);
-      } catch (error) {
+      } catch {
         reject(new Error('Failed to read file contents'));
       }
     };

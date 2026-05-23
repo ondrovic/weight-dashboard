@@ -188,7 +188,7 @@ export const parseCSV = async <T>(file: File): Promise<ParsedFileResult<T[]>> =>
     };
   } catch (error) {
     console.error('Error parsing CSV file:', error);
-    throw new Error(`Failed to parse CSV file: ${file.name}`);
+    throw new Error(`Failed to parse CSV file: ${file.name}`, { cause: error });
   }
 };
 

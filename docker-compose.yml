@@ -66,13 +66,13 @@ services:
       retries: 3
       start_period: 15s
 
-  # Frontend web application
+  # Frontend web application (static build: Vite 8 + TypeScript 6; image build uses Node 22 + Yarn)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=${VITE_API_URL} # Backend address
+        - VITE_API_URL=${VITE_API_URL}
         - VITE_API_ENDPOINT=${API_ENDPOINT}
         - VITE_API_TARGET=${VITE_API_TARGET}
     container_name: weight-tracker-frontend
