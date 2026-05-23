@@ -1,6 +1,7 @@
 // frontend/src/components/weight/WeightMetricsCard.tsx
 import React, { useMemo } from 'react';
 import { WeightStats, WeightEntry, createEmptyWeightStats } from '@/types/weight-data.types';
+import { useMetrics } from '@/contexts/Metrics';
 import {
   calculateDaysBetween,
   calculateDailyRate,
@@ -57,6 +58,8 @@ export const WeightMetricsCard: React.FC<WeightMetricsCardProps> = ({
   goalWeight,
   filteredData
 }) => {
+  const { getDisplayName } = useMetrics();
+
   // Calculate filtered stats if we have filtered data
   const filteredStats = useMemo(() => {
     if (!filteredData || filteredData.length === 0) {
@@ -205,7 +208,7 @@ export const WeightMetricsCard: React.FC<WeightMetricsCardProps> = ({
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Muscle Mass</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{getDisplayName('Muscle Mass')}</p>
                 <p className={`text-lg font-semibold ${muscleMassChange > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                   {muscleMassChange > 0 ? '+' : ''}{formatValue(muscleMassChange, 1)} lbs
                 </p>
@@ -215,7 +218,7 @@ export const WeightMetricsCard: React.FC<WeightMetricsCardProps> = ({
 
           {/* Body fat percentage change */}
           <div>
-            <h3 className="text-md font-medium text-gray-700 dark:text-gray-200">Body Fat %</h3>
+            <h3 className="text-md font-medium text-gray-700 dark:text-gray-200">{getDisplayName('Body Fat %')}</h3>
             <div className="flex justify-between items-center">
               <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                 {formatValue(oldestBodyFat)}% → {formatValue(latestBodyFat)}%

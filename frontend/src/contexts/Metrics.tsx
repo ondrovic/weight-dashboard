@@ -5,6 +5,8 @@ import React, {
   useState,
   useEffect,
   useMemo,
+  useCallback,
+  useRef,
   ReactNode,
 } from 'react';
 import { Metric } from '@/components/metric-selector';
@@ -14,6 +16,14 @@ import {
   DEFAULT_TABLE_METRICS,
   DEFAULT_VISIBLE_METRICS,
 } from '@/constants/Mertrics';
+import {
+  BASE_METRIC_DEFINITIONS,
+  DEFAULT_FORM_FIELD_ORDER,
+} from '@/constants/metric-definitions';
+import {
+  normalizeFormFieldOrder,
+  parseMetricLabels,
+} from '@/utils/form-field-order.util';
 
 const THEME_PREFERENCE_KEY = 'themePreference';
 
@@ -40,39 +50,28 @@ function readInitialThemePreference(): ThemePreference {
   return 'system';
 }
 
-// Define all available metrics
-export const availableMetrics: Metric[] = [
-  { key: 'Date', name: 'Date', unit: '' },
-  { key: 'Weight', name: 'Weight', color: '#3B82F6', unit: 'lbs' },
-  { key: 'BMI', name: 'BMI', color: '#10B981', unit: '' },
-  { key: 'Body Fat %', name: 'Body Fat %', color: '#F59E0B', unit: '%' },
-  { key: 'V-Fat', name: 'Vis Fat', color: '#EF4444', unit: '' },
-  { key: 'S-Fat', name: 'Sub Fat', color: '#EC4899', unit: '' },
-  { key: 'Age', name: 'Age', color: '#FBBF24', unit: 'years' },
-  { key: 'HR', name: 'Heart Rate', color: '#F472B6', unit: 'bpm' },
-  { key: 'Water %', name: 'Water', color: '#06B6D4', unit: '%' },
-  { key: 'Bone Mass %', name: 'Bone Mass %', color: '#D946EF', unit: '%' },
-  { key: 'Protien %', name: 'Protein %', color: '#9333EA', unit: '%' },
-  { key: 'Fat Free Weight', name: 'Fat Free Weight', color: '#A78BFA', unit: 'lbs' },
-  { key: 'Bone Mass LB', name: 'Bone Mass lbs', color: '#D946EF', unit: 'lbs' },
-  { key: 'BMR', name: 'BMR', color: '#A855F7', unit: 'kcal' },
-  { key: 'Muscle Mass', name: 'Muscle Mass lbs', color: '#A855F7', unit: 'lbs' },
-];
+/** @deprecated Use useMetrics().availableMetrics for display names with overrides applied. */
+export const availableMetrics: Metric[] = BASE_METRIC_DEFINITIONS;
 
 interface MetricsContextType {
   availableMetrics: Metric[];
   tableMetrics: string[];
   chartMetrics: string[];
   defaultVisibleMetrics: string[];
+  formFieldOrder: string[];
+  metricLabels: Record<string, string>;
   goalWeight: number | null;
   darkMode: boolean;
   setTableMetrics: (metrics: string[]) => void;
   setChartMetrics: (metrics: string[]) => void;
   setDefaultVisibleMetrics: (metrics: string[]) => void;
+  setFormFieldOrder: (order: string[]) => void;
+  renameMetricLabel: (key: string, label: string) => void;
   setGoalWeight: (weight: number | null) => void;
   setDarkMode: (enabled: boolean) => void;
   toggleDarkMode: () => void;
   getMetricByKey: (key: string) => Metric | undefined;
+  getDisplayName: (key: string) => string;
   resetToDefaults: () => void;
   loading: boolean;
   error: string | null;
@@ -92,12 +91,24 @@ function applyDarkModeClass(isDarkMode: boolean) {
   }
 }
 
+function mergeMetricLabels(
+  definitions: Metric[],
+  labels: Record<string, string>,
+): Metric[] {
+  return definitions.map((metric) => ({
+    ...metric,
+    name: labels[metric.key]?.trim() || metric.name,
+  }));
+}
+
 export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) => {
   const [tableMetrics, setTableMetricsState] = useState<string[]>(DEFAULT_TABLE_METRICS);
   const [chartMetrics, setChartMetricsState] = useState<string[]>(DEFAULT_CHART_METRICS);
   const [defaultVisibleMetrics, setDefaultVisibleMetricsState] = useState<string[]>(
     DEFAULT_VISIBLE_METRICS,
   );
+  const [formFieldOrder, setFormFieldOrderState] = useState<string[]>(DEFAULT_FORM_FIELD_ORDER);
+  const [metricLabels, setMetricLabelsState] = useState<Record<string, string>>({});
   const [goalWeight, setGoalWeightState] = useState<number | null>(null);
   const [themePreference, setThemePreferenceState] = useState<ThemePreference>(
     readInitialThemePreference,
@@ -109,6 +120,14 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const formFieldOrderDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const metricLabelsDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const availableMetrics = useMemo(
+    () => mergeMetricLabels(BASE_METRIC_DEFINITIONS, metricLabels),
+    [metricLabels],
+  );
 
   const darkMode = useMemo(
     () =>
@@ -135,7 +154,6 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
       setSystemMatches(e.matches);
     };
     setSystemMatches(mediaQuery.matches);
-    // Safari (and some embedded browsers) still require addListener/removeListener.
     if (typeof mediaQuery.addEventListener === 'function') {
       mediaQuery.addEventListener('change', handleChange);
     } else {
@@ -151,6 +169,17 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
       }
     };
   }, [themePreference]);
+
+  useEffect(() => {
+    return () => {
+      if (formFieldOrderDebounceRef.current) {
+        clearTimeout(formFieldOrderDebounceRef.current);
+      }
+      if (metricLabelsDebounceRef.current) {
+        clearTimeout(metricLabelsDebounceRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -170,6 +199,11 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
           setDefaultVisibleMetricsState(settings.defaultVisibleMetrics);
         }
 
+        if (settings.formFieldOrder && settings.formFieldOrder.length > 0) {
+          setFormFieldOrderState(normalizeFormFieldOrder(settings.formFieldOrder));
+        }
+
+        setMetricLabelsState(parseMetricLabels(settings.metricLabels));
         setGoalWeightState(settings.goalWeight);
 
         setError(null);
@@ -220,6 +254,63 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
     }
   };
 
+  const persistFormFieldOrder = useCallback(async (order: string[]) => {
+    try {
+      await settingsApi.updateFormFieldOrder(order);
+    } catch (err) {
+      console.error('Failed to update form field order:', err);
+      setError('Failed to save form field order to the server.');
+    }
+  }, []);
+
+  const setFormFieldOrder = useCallback(
+    (order: string[]) => {
+      const normalized = normalizeFormFieldOrder(order);
+      setFormFieldOrderState(normalized);
+
+      if (formFieldOrderDebounceRef.current) {
+        clearTimeout(formFieldOrderDebounceRef.current);
+      }
+      formFieldOrderDebounceRef.current = setTimeout(() => {
+        void persistFormFieldOrder(normalized);
+      }, 400);
+    },
+    [persistFormFieldOrder],
+  );
+
+  const persistMetricLabels = useCallback(async (labels: Record<string, string>) => {
+    try {
+      await settingsApi.updateMetricLabels(labels);
+    } catch (err) {
+      console.error('Failed to update metric labels:', err);
+      setError('Failed to save metric labels to the server.');
+    }
+  }, []);
+
+  const renameMetricLabel = useCallback(
+    (key: string, label: string) => {
+      const trimmed = label.trim().slice(0, 50);
+      setMetricLabelsState((prev) => {
+        const next = { ...prev };
+        if (trimmed.length === 0) {
+          delete next[key];
+        } else {
+          next[key] = trimmed;
+        }
+
+        if (metricLabelsDebounceRef.current) {
+          clearTimeout(metricLabelsDebounceRef.current);
+        }
+        metricLabelsDebounceRef.current = setTimeout(() => {
+          void persistMetricLabels(next);
+        }, 400);
+
+        return next;
+      });
+    },
+    [persistMetricLabels],
+  );
+
   const setGoalWeight = async (weight: number | null) => {
     try {
       setGoalWeightState(weight);
@@ -246,7 +337,6 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
   };
 
   const toggleDarkMode = () => {
-    // Cycle system -> dark -> light -> system, so users can return to OS-following mode.
     let nextPref: ThemePreference;
     if (themePreference === 'system') {
       nextPref = systemMatches ? 'light' : 'dark';
@@ -271,6 +361,8 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
       setTableMetricsState(settings.tableMetrics);
       setChartMetricsState(settings.chartMetrics);
       setDefaultVisibleMetricsState(settings.defaultVisibleMetrics || DEFAULT_VISIBLE_METRICS);
+      setFormFieldOrderState(normalizeFormFieldOrder(settings.formFieldOrder));
+      setMetricLabelsState(parseMetricLabels(settings.metricLabels));
       setGoalWeightState(settings.goalWeight);
 
       setError(null);
@@ -282,9 +374,15 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
     }
   };
 
-  const getMetricByKey = (key: string): Metric | undefined => {
-    return availableMetrics.find((metric) => metric.key === key);
-  };
+  const getMetricByKey = useCallback(
+    (key: string): Metric | undefined => availableMetrics.find((metric) => metric.key === key),
+    [availableMetrics],
+  );
+
+  const getDisplayName = useCallback(
+    (key: string): string => getMetricByKey(key)?.name ?? key,
+    [getMetricByKey],
+  );
 
   return (
     <MetricsContext.Provider
@@ -293,15 +391,20 @@ export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) =>
         tableMetrics,
         chartMetrics,
         defaultVisibleMetrics,
+        formFieldOrder,
+        metricLabels,
         goalWeight,
         darkMode,
         setTableMetrics,
         setChartMetrics,
         setDefaultVisibleMetrics,
+        setFormFieldOrder,
+        renameMetricLabel,
         setGoalWeight,
         setDarkMode,
         toggleDarkMode,
         getMetricByKey,
+        getDisplayName,
         resetToDefaults,
         loading,
         error,

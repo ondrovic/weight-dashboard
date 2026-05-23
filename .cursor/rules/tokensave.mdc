@@ -1,0 +1,12 @@
+---
+description: Prefer TokenSave MCP tools for codebase understanding.
+---
+
+When working in this repository, prefer TokenSave's MCP tools over broad file exploration.
+
+- Start most tasks with `tokensave_context` to get entry points, relevant symbols, and code snippets.
+- Use `tokensave_search` when you need to locate a symbol by name.
+- Use call-graph/impact tools (`tokensave_callers`, `tokensave_callees`, `tokensave_impact`, etc.) before making changes that might ripple.
+- Avoid spawning exploratory scans or reading lots of files directly unless TokenSave cannot answer.
+- If a tool response includes `tokensave_metrics: before=N after=M`, mention the approximate savings in your response.
+

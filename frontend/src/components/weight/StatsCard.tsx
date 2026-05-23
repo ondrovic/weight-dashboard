@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { WeightStats, createEmptyWeightStats, WeightEntry } from '@/types/weight-data.types';
+import { useMetrics } from '@/contexts/Metrics';
 
 interface StatsCardProps {
   stats: WeightStats | null;
@@ -54,6 +55,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   loading, 
   filteredData 
 }) => {
+  const { getDisplayName } = useMetrics();
   // Calculate filtered stats if we have filtered data
   const filteredStats = useMemo(() => {
     if (!filteredData || filteredData.length === 0) {
@@ -188,40 +190,40 @@ export const StatsCard: React.FC<StatsCardProps> = ({
         <h3 className="text-lg font-medium mb-3 text-gray-800 dark:text-gray-200">Body Composition</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatItem
-            label="Body Fat %"
+            label={getDisplayName('Body Fat %')}
             value={formatValue(latest["Body Fat %"])}
             suffix="%"
           />
           <StatItem
-            label="BMI"
+            label={getDisplayName('BMI')}
             value={formatValue(latest.BMI)}
           />
           <StatItem
-            label="Water %"
+            label={getDisplayName('Water %')}
             value={formatValue(latest["Water %"])}
             suffix="%"
           />
           <StatItem
-            label="Muscle Mass"
+            label={getDisplayName('Muscle Mass')}
             value={formatValue(latest["Muscle Mass"])}
             suffix="lbs"
           />
           <StatItem
-            label="Visceral Fat"
+            label={getDisplayName('V-Fat')}
             value={formatValue(latest["V-Fat"])}
           />
           <StatItem
-            label="Subcutaneous Fat"
+            label={getDisplayName('S-Fat')}
             value={formatValue(latest["S-Fat"])}
             suffix="%"
           />
           <StatItem
-            label="BMR"
+            label={getDisplayName('BMR')}
             value={formatValue(latest.BMR, 0)}
             suffix="kcal"
           />
           <StatItem
-            label="Heart Rate"
+            label={getDisplayName('HR')}
             value={formatValue(latest.HR, 0)}
             suffix="bpm"
           />

@@ -5,6 +5,24 @@ import { parseDate, formatDateMMDDYY } from '../utils/date.util';
 import { ConversionService } from './conversion.service';
 import { RawWeightData, ProcessedWeightData } from '../types/api/weight-data.types';
 
+type DbWeightRecord = {
+  date: Date;
+  weight: number;
+  bmi: number;
+  bodyFatPercentage: number;
+  visceralFat: number;
+  subcutaneousFat: number;
+  metabolicAge: number;
+  heartRate: number;
+  waterPercentage: number;
+  boneMassPercentage: number;
+  proteinPercentage: number;
+  fatFreeWeight: number;
+  boneMassLb: number;
+  bmr: number;
+  muscleMass: number;
+};
+
 export class DataService {
   async processData(filePath: string): Promise<ProcessedWeightData[]> {
     const fileContent = fs.readFileSync(filePath, 'utf8');
@@ -123,50 +141,62 @@ export class DataService {
     return Object.values(record).filter(v => v !== 0 && v !== undefined && v !== null).length;
   }
 
+  private toDbRecord(record: ProcessedWeightData, date: Date): DbWeightRecord {
+    return {
+      date,
+      weight: record.Weight || 0,
+      bmi: record.BMI || 0,
+      bodyFatPercentage: record['Body Fat %'] || 0,
+      visceralFat: record['V-Fat'] || 0,
+      subcutaneousFat: record['S-Fat'] || 0,
+      metabolicAge: record.Age || 0,
+      heartRate: record.HR || 0,
+      waterPercentage: record['Water %'] || 0,
+      boneMassPercentage: record['Bone Mass %'] || 0,
+      proteinPercentage: record['Protien %'] || 0,
+      fatFreeWeight: record['Fat Free Weight'] || 0,
+      boneMassLb: record['Bone Mass LB'] || 0,
+      bmr: record.BMR || 0,
+      muscleMass: record['Muscle Mass'] || 0
+    };
+  }
+
   private async saveToDatabase(records: ProcessedWeightData[]): Promise<ProcessedWeightData[]> {
-    const saved: ProcessedWeightData[] = [];
-  
+    const parsed: Array<{ date: Date; record: ProcessedWeightData; dbRecord: DbWeightRecord }> = [];
+
     for (const record of records) {
       const date = parseDate(record.Date);
       if (!date) continue;
-  
-      // Convert the processed record to DB format with all required fields
-      const dbRecord = {
-        date,
-        weight: record.Weight || 0,
-        bmi: record.BMI || 0,
-        bodyFatPercentage: record['Body Fat %'] || 0,
-        visceralFat: record['V-Fat'] || 0,
-        subcutaneousFat: record['S-Fat'] || 0,
-        metabolicAge: record.Age || 0,
-        heartRate: record.HR || 0,
-        waterPercentage: record['Water %'] || 0,
-        boneMassPercentage: record['Bone Mass %'] || 0,
-        proteinPercentage: record['Protien %'] || 0,
-        fatFreeWeight: record['Fat Free Weight'] || 0,
-        boneMassLb: record['Bone Mass LB'] || 0,
-        bmr: record.BMR || 0,
-        muscleMass: record['Muscle Mass'] || 0
-      };
-  
-      try {
-        const existing = await WeightData.findOne({ date });
-        
-        if (existing) {
-          // Update existing record with the new values
-          await WeightData.updateOne({ _id: existing._id }, dbRecord);
-          saved.push({ ...record, id: existing._id.toString() });
-        } else {
-          // Create new record
-          const newDoc = await WeightData.create(dbRecord);
-          saved.push({ ...record, id: newDoc._id.toString() });
-        }
-      } catch (error) {
-        console.error(`Error saving record for date ${date}:`, error);
-        // Continue processing other records
-      }
+      parsed.push({ date, record, dbRecord: this.toDbRecord(record, date) });
     }
-  
-    return saved;
+
+    if (parsed.length === 0) return [];
+
+    const ops = parsed.map(({ date, dbRecord }) => ({
+      updateOne: {
+        filter: { date },
+        update: { $set: dbRecord },
+        upsert: true
+      }
+    }));
+
+    try {
+      await WeightData.bulkWrite(ops, { ordered: false });
+    } catch (error) {
+      console.error('Error bulk saving records:', error);
+    }
+
+    // Fetch IDs for the affected dates in one roundtrip.
+    const dates = parsed.map(p => p.date);
+    const docs = await WeightData.find({ date: { $in: dates } }).select('_id date').lean();
+    const idByTime = new Map<number, string>();
+    docs.forEach((doc: any) => {
+      idByTime.set(new Date(doc.date).getTime(), doc._id.toString());
+    });
+
+    return parsed.map(({ date, record }) => ({
+      ...record,
+      id: idByTime.get(date.getTime())
+    }));
   }
 }

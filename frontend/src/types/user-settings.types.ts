@@ -4,6 +4,8 @@ export interface UserSettings {
   tableMetrics: string[];
   chartMetrics: string[];
   defaultVisibleMetrics: string[];
+  formFieldOrder: string[];
+  metricLabels: Record<string, string>;
   goalWeight: number | null;
   darkMode?: boolean;
 }

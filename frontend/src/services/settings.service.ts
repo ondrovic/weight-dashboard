@@ -70,6 +70,20 @@ export const settingsApi = {
   },
 
   /**
+   * Update weight entry form field order
+   */
+  async updateFormFieldOrder(formFieldOrder: string[]): Promise<UserSettings> {
+    return this.updateSettings({ formFieldOrder });
+  },
+
+  /**
+   * Update custom metric display labels
+   */
+  async updateMetricLabels(metricLabels: Record<string, string>): Promise<UserSettings> {
+    return this.updateSettings({ metricLabels });
+  },
+
+  /**
    * Reset settings to defaults
    */
   async resetSettings(): Promise<UserSettings> {

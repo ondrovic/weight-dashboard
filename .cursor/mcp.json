@@ -1,0 +1,10 @@
+{
+    "mcpServers": {
+        "tokensave": {
+            "args": [
+                "serve"
+            ],
+            "command": "/home/ondrovic/.cargo/bin/tokensave"
+        }
+    }
+}

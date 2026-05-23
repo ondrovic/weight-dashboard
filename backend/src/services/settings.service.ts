@@ -5,9 +5,15 @@ import {
   DEFAULT_TABLE_METRICS,
   DEFAULT_CHART_METRICS,
   DEFAULT_VISIBLE_METRICS,
+  DEFAULT_FORM_FIELD_ORDER,
+  DEFAULT_METRIC_LABELS,
   DEFAULT_GOAL_WEIGHT,
-  DEFAULT_DARK_MODE
+  DEFAULT_DARK_MODE,
 } from '../constants/defaults.constants';
+import {
+  normalizeFormFieldOrder,
+  sanitizeMetricLabels,
+} from '../utils/form-field-order.util';
 
 export class SettingsService {
   async getUserSettings(userId = DEFAULT_USER_ID) {
@@ -19,8 +25,10 @@ export class SettingsService {
         tableMetrics: DEFAULT_TABLE_METRICS,
         chartMetrics: DEFAULT_CHART_METRICS,
         defaultVisibleMetrics: DEFAULT_VISIBLE_METRICS,
+        formFieldOrder: DEFAULT_FORM_FIELD_ORDER,
+        metricLabels: DEFAULT_METRIC_LABELS,
         goalWeight: DEFAULT_GOAL_WEIGHT,
-        darkMode: DEFAULT_DARK_MODE
+        darkMode: DEFAULT_DARK_MODE,
       });
     } else {
       // Self-heal legacy/incomplete settings docs to satisfy DB validators.
@@ -43,6 +51,20 @@ export class SettingsService {
       }
       if (settings.darkMode === undefined) {
         settings.darkMode = DEFAULT_DARK_MODE;
+        changed = true;
+      }
+      if (!Array.isArray(settings.formFieldOrder) || settings.formFieldOrder.length === 0) {
+        settings.formFieldOrder = DEFAULT_FORM_FIELD_ORDER;
+        changed = true;
+      } else {
+        const normalized = normalizeFormFieldOrder(settings.formFieldOrder);
+        if (JSON.stringify(normalized) !== JSON.stringify(settings.formFieldOrder)) {
+          settings.formFieldOrder = normalized;
+          changed = true;
+        }
+      }
+      if (settings.metricLabels === undefined || settings.metricLabels === null) {
+        settings.metricLabels = { ...DEFAULT_METRIC_LABELS };
         changed = true;
       }
       if (changed) {
@@ -77,6 +99,16 @@ export class SettingsService {
       settings.darkMode = updates.darkMode;
     }
 
+    if (updates.formFieldOrder && Array.isArray(updates.formFieldOrder)) {
+      settings.formFieldOrder = normalizeFormFieldOrder(updates.formFieldOrder);
+    }
+
+    if (updates.metricLabels !== undefined) {
+      settings.metricLabels = sanitizeMetricLabels(
+        updates.metricLabels as Record<string, string>,
+      );
+    }
+
     await settings.save();
     return settings;
   }
@@ -87,6 +119,8 @@ export class SettingsService {
     settings.tableMetrics = DEFAULT_TABLE_METRICS;
     settings.chartMetrics = DEFAULT_CHART_METRICS;
     settings.defaultVisibleMetrics = DEFAULT_VISIBLE_METRICS;
+    settings.formFieldOrder = DEFAULT_FORM_FIELD_ORDER;
+    settings.metricLabels = { ...DEFAULT_METRIC_LABELS };
     settings.goalWeight = DEFAULT_GOAL_WEIGHT;
 
     await settings.save();

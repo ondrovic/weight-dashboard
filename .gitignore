@@ -51,3 +51,6 @@ upload/*
 
 # Except .gitkeep
 !/backend/uploads/.gitkeep
+
+# tokensave
+.tokensave/*

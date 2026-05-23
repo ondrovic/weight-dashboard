@@ -1,0 +1,98 @@
+---
+description: Defines rule precedence between CLAUDE.md and Cursor memory system
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Rule: System Precedence (CLAUDE.md + Memory System)
+
+This rule defines how conflicting instructions are resolved between:
+- CLAUDE.md
+- .cursor/memory/*
+- other .mdc rules
+
+---
+
+# 1. Precedence Order (CRITICAL)
+
+You MUST follow this priority order:
+
+## Level 1 — Runtime Memory (HIGHEST PRIORITY)
+- .cursor/memory/state.md
+- .cursor/memory/context.md
+- .cursor/memory/tasks.md
+
+These represent the live system state and MUST ALWAYS take priority over static instructions. Entry structure (date headings, bullets, ordering) is specified in **memory-bank.mdc** (same `.cursor/rules/` directory). **`tasks.md` completion and progress lines** must be self-contained (stable task ID plus a concise outcome; do not use Cursor plan links or “see plan” as the sole record)—see **memory-bank.mdc** §6 and the `tasks.md` / session wrap-up sections.
+
+---
+
+## Level 2 — CLAUDE.md (Project Rules)
+
+If `CLAUDE.md` exists:
+
+- It defines project-level constraints and conventions
+- It MUST be followed unless it conflicts with Level 1 (memory system)
+- It is considered static configuration, not runtime truth
+
+---
+
+## Level 3 — Other .mdc Rules
+
+- Applied only if they do not conflict with Level 1 or Level 2
+- Always subordinate to memory + CLAUDE.md
+
+---
+
+## Level 4 — Default Model Behavior (LOWEST PRIORITY)
+
+- Only used when no explicit rules exist
+
+---
+
+# 2. Conflict Resolution Rules
+
+If conflicts occur:
+
+### Memory ALWAYS wins over CLAUDE.md
+Because memory reflects actual runtime state.
+
+### CLAUDE.md wins over other .mdc rules
+Because it defines project-specific constraints.
+
+### Never silently resolve conflicts
+You MUST explicitly reason about which rule is being followed.
+
+---
+
+# 3. CLAUDE.md Handling Rules
+
+If CLAUDE.md exists:
+
+- You MUST read it before execution
+- You MUST apply its rules unless overridden by memory
+- You MUST re-check it when project structure changes
+
+However:
+
+- You MUST NOT treat CLAUDE.md as runtime state
+- You MUST NOT store CLAUDE.md content in memory unless it becomes an actual decision or constraint
+
+---
+
+# 4. Memory System Authority Rule
+
+The `.cursor/memory/` system is the **only source of runtime truth**.
+
+It defines:
+- what is happening
+- what has changed
+- what is currently active
+
+Static files (including CLAUDE.md) cannot override it.
+
+---
+
+# 5. Core Principle
+
+- CLAUDE.md = rules of the system
+- memory = state of the system

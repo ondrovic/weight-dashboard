@@ -1,0 +1,334 @@
+---
+description: Enforces append-only long-term memory synchronization using .cursor/memory/state.md, context.md, and tasks.md with strict semantic logging rules
+globs: **/*
+alwaysApply: true
+---
+
+# Memory Bank Protocol (Append-Only Event-Sourced System)
+
+You are an agent with persistent memory via the `.cursor/memory/` directory.  
+This memory system is the source of truth for continuity, decisions, and task tracking.
+
+ALL memory is:
+- append-only
+- date-scoped via markdown `### MM-DD-YYYY` sections (see §3)
+- immutable history
+- never overwritten
+- never deleted
+
+---
+
+# 1. Memory Files
+
+The system consists of three core files:
+
+- state.md → runtime event log (current state is derived from latest entries)
+- context.md → durable architectural knowledge log
+- tasks.md → task lifecycle event log
+
+---
+
+# 2. REQUIRED: Initial Action
+
+Before starting ANY task, you MUST:
+
+## Step 1 — Sync Memory
+Read ALL of:
+
+- .cursor/memory/state.md
+- .cursor/memory/context.md
+- .cursor/memory/tasks.md
+
+## Step 2 — Reconstruct Current State
+- Current state is derived from the **topmost** `### MM-DD-YYYY` section in state.md and its bullets (newest date first; see §3)
+- Do NOT assume or invent state outside memory
+
+## Step 3 — Interpret System Context
+- Identify active tasks from tasks.md
+- Identify architectural constraints from context.md
+- Identify latest runtime state from state.md
+
+## Step 4 — Missing Memory Handling
+If any memory file is missing:
+- Notify the user
+- Offer to initialize baseline memory structure
+- Do NOT proceed with assumptions
+
+---
+
+# 3. DATE SCOPING RULE (MANDATORY)
+
+Each calendar day is scoped with a **markdown level-3 heading**:
+
+```markdown
+### MM-DD-YYYY
+```
+
+Under that heading, write one or more bullet lines. Match repo style: a leading space before the hyphen:
+
+```markdown
+ - Your entry text here.
+```
+
+**Section order (reverse chronological):**
+- When the calendar day **changes**, add a **new** `### MM-DD-YYYY` block **above** all existing date sections (newest at the top of the file).
+- When logging **more on the same day**, add new bullets **under that day’s existing heading** (do not duplicate the heading for the same date).
+
+The date in the heading is always `MM-DD-YYYY` and must reflect actual execution time (see §5.5).
+
+---
+
+# 4. APPEND-ONLY RULE (NON-NEGOTIABLE)
+
+You MUST NEVER:
+- overwrite or edit existing headings or bullets
+- delete history
+- replace prior state
+
+You MAY ONLY **add** immutably:
+- a new top `### MM-DD-YYYY` section with its bullets when starting a new day, or
+- new bullets under the current day’s heading
+
+“Append-only” means **only additive writes**; prepending a new date block at the top is allowed and is the standard way to start a new day.
+
+Memory is immutable history.
+
+---
+
+# 5. SEMANTIC LOGGING RULES
+
+## 5.1 Meaningful Change Only Rule
+
+You MUST ONLY write to memory when a meaningful change occurs.
+
+Meaningful changes include:
+- task started
+- task completed
+- blocker introduced or resolved
+- architectural decision made
+- system understanding changed
+
+DO NOT log:
+- explanations
+- minor clarifications
+- unchanged state
+- redundant updates
+
+---
+
+## 5.2 No Redundant Entries Rule
+
+You MUST NOT append:
+- duplicate entries
+- semantically identical updates
+- "no change" logs
+
+If nothing meaningful changed:
+→ DO NOT write to memory
+
+---
+
+## 5.3 Memory Is Not Chat History Rule
+
+DO NOT store:
+- conversational text
+- reasoning chains
+- explanations
+- user dialogue
+
+ONLY store:
+- state changes
+- tasks
+- architectural decisions
+- system knowledge
+
+---
+
+## 5.4 No Contradictions Without Resolution
+
+If new information contradicts prior memory:
+
+- DO NOT modify old entries
+- Add a new bullet (under the correct day’s heading) that explicitly resolves the contradiction
+
+**In-repo pattern (state.md):** a single bullet such as `Correction (...): …` describing what was wrong and how it is resolved.
+
+**Optional structured form** (same bullet or follow-on bullets, still under the day heading—never edit old text):
+
+```markdown
+ - Correction: …
+   - Previous: X
+   - New: Y
+```
+
+---
+
+## 5.5 No Backdating Rule
+
+You MUST NOT fabricate or adjust dates.
+
+All headings and entry timing MUST reflect actual execution time.
+
+---
+
+# 6. TASK IDENTIFICATION RULE
+
+Every task MUST have a stable identifier.
+
+Format:
+task-name-MM-DD-YYYY
+
+Example:
+auth-refactor-05-06-2026
+
+Tasks MUST be tracked across all updates using this ID.
+
+In **tasks.md**, log lifecycle lines under the appropriate `### MM-DD-YYYY` section, for example:
+- `Task Started: your-task-id-MM-DD-YYYY`
+- `Task Completed: your-task-id-MM-DD-YYYY`
+
+## Self-contained task log (mandatory)
+
+- Every **completion** line in `tasks.md` MUST remain understandable **without** Cursor plans, chat transcripts, or private URLs: include the stable `task-name-MM-DD-YYYY` **and** a concise outcome (what shipped or changed), typically on the same bullet after an em dash or colon.
+- **Do not** use Cursor plan links, ephemeral plan titles alone, or “see plan” as the sole completion record—other readers and future agents will not have access.
+- Optional: use the same pattern for **started** entries (one-line scope); keep it brief to satisfy §5.1 (meaningful change only).
+
+---
+
+# 7. MEMORY FILE RESPONSIBILITIES
+
+## state.md (RUNTIME EVENT LOG)
+
+state.md is an append-only event log.
+
+The current state is derived from the latest (topmost) date section and its bullets.
+
+You MUST add bullets (or a new top date section) when:
+- starting work
+- switching focus
+- encountering blockers
+- making decisions
+
+Example:
+
+```markdown
+### 05-07-2026
+ - Focus: auth refactor — implementing login callback.
+ - Blocker: awaiting API contract from partner team.
+### 05-06-2026
+ - Fix applied: navigation hover no longer double-fires synthetic events.
+```
+
+---
+
+## context.md (ARCHITECTURAL KNOWLEDGE LOG)
+
+Append-only durable system knowledge.
+
+You MUST append (new section or bullets) when:
+- architecture changes
+- constraints discovered
+- design decisions made
+- patterns identified
+
+Use clear prefixes in bullets, e.g. `Decision:`, `Constraint:`.
+
+Example:
+
+```markdown
+### 05-07-2026
+ - Decision: service layer introduced; UI calls services only.
+ - Constraint: DB writes must go through service layer.
+```
+
+---
+
+## tasks.md (TASK EVENT LOG)
+
+Append-only task lifecycle tracking.
+
+You MUST append:
+- task started
+- task progress updates
+- task completion
+- newly discovered tasks
+
+Example:
+
+```markdown
+### 05-07-2026
+ - Task Started: auth-refactor-05-07-2026 — add OAuth callback route and env wiring.
+ - Task Completed: auth-refactor-05-07-2026 — callback route live; tokens stored via existing session helper.
+### 05-06-2026
+ - Task Completed: setup-project-05-06-2026 — repo scaffold and CI smoke checks in place.
+```
+
+---
+
+# 8. STATE RECONSTRUCTION RULE
+
+Because memory is additive-only with newest sections first:
+
+- Current state = the **topmost** `### MM-DD-YYYY` block in state.md and its bullets (then prior sections if needed)
+- Never assume state outside logs
+- If ambiguous → infer only from the last 3–5 bullets in the newest section(s)
+
+---
+
+# 9. MEMORY WRITE GUARD (PRE-WRITE CHECK)
+
+Before writing ANY memory entry, you MUST ask:
+
+- Did a meaningful change occur?
+- Is this already captured?
+- Will this change future decisions?
+
+If NO → do not write
+
+---
+
+# 10. SESSION WRAP-UP (MANDATORY)
+
+Trigger conditions:
+- task completion
+- user requests "sync memory"
+- end of work session
+
+You MUST:
+
+## state.md
+- add a final state bullet (under today’s heading, or a new top `###` if the day rolled over)
+
+## tasks.md
+- add completion (or progress) bullets with **task ID and a one-line outcome** (self-contained per §6); no plan-only references
+
+## context.md
+- add any durable insights as bullets (often `Decision:` / `Constraint:`)
+
+---
+
+# 11. CRITICAL RULES (NON-NEGOTIABLE)
+
+- ALWAYS read memory before acting
+- NEVER overwrite or delete existing headings or bullets
+- ONLY additive writes: new top date section and/or new bullets under the correct day
+- ALWAYS use `### MM-DD-YYYY` for the date scope and bullets underneath (see §3)
+- NEVER duplicate entries
+- NEVER log without meaningful change
+- ALWAYS treat memory as immutable system history
+
+---
+
+# 12. MENTAL MODEL
+
+- state.md → runtime event stream
+- context.md → system knowledge evolution
+- tasks.md → work execution timeline
+
+---
+
+# 13. CORE PRINCIPLE
+
+Memory is not state.  
+Memory is not log noise.  
+Memory is structured system history.

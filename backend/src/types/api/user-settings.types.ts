@@ -42,6 +42,16 @@
  *           type: boolean
  *           description: Whether dark mode is enabled
  *           example: false
+ *         formFieldOrder:
+ *           type: array
+ *           description: Display order of fields on the weight entry form
+ *           items:
+ *             type: string
+ *         metricLabels:
+ *           type: object
+ *           additionalProperties:
+ *             type: string
+ *           description: Custom display names for metrics (key to label)
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -58,6 +68,8 @@ export interface UserSettings {
   tableMetrics: string[];
   chartMetrics: string[];
   defaultVisibleMetrics: string[];
+  formFieldOrder: string[];
+  metricLabels: Record<string, string>;
   goalWeight: number | null;
   darkMode: boolean;
   createdAt: string;

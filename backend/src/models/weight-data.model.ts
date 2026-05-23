@@ -38,4 +38,8 @@ const WeightDataSchema: Schema = new Schema({
   muscleMass: { type: Number, required: true, default: 0 },
 }, { timestamps: true });
 
+// One record per day (enforced).
+// Note: if the existing DB contains duplicate dates, MongoDB will reject building this unique index.
+WeightDataSchema.index({ date: 1 }, { unique: true });
+
 export default mongoose.model<IWeightData>('WeightData', WeightDataSchema);

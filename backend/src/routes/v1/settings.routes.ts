@@ -58,6 +58,16 @@ router.get('/', getSettings);
  *               darkMode:
  *                 type: boolean
  *                 description: Whether dark mode is enabled
+ *               formFieldOrder:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Display order of fields on the weight entry form
+ *               metricLabels:
+ *                 type: object
+ *                 additionalProperties:
+ *                   type: string
+ *                 description: Custom display names for metrics
  *     responses:
  *       200:
  *         description: Settings updated successfully

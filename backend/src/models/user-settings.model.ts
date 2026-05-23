@@ -6,6 +6,8 @@ export interface IUserSettings extends Document {
   tableMetrics: string[];
   chartMetrics: string[];
   defaultVisibleMetrics: string[];
+  formFieldOrder: string[];
+  metricLabels: Record<string, string>;
   goalWeight: number | null;
   darkMode: boolean;
   createdAt: Date;
@@ -19,6 +21,8 @@ const UserSettingsSchema = new Schema<IUserSettings>(
     tableMetrics: { type: [String], required: true },
     chartMetrics: { type: [String], required: true },
     defaultVisibleMetrics: { type: [String], required: true },
+    formFieldOrder: { type: [String], required: true },
+    metricLabels: { type: Schema.Types.Mixed, default: {} },
     goalWeight: { type: Number, default: null },
     darkMode: { type: Boolean, default: false }
   },

@@ -19,7 +19,7 @@ export const SettingsPage: React.FC = () => {
     const confirmed = await confirm({
       title: 'Reset Settings',
       message:
-        'Are you sure you want to reset all settings to defaults? This will affect your table columns, chart metrics, default visible metrics, and weight goal.',
+        'Are you sure you want to reset all settings to defaults? This will affect your table columns, chart metrics, default visible metrics, form field layout, metric labels, and weight goal.',
       confirmText: 'Reset',
       cancelText: 'Cancel',
       variant: 'danger',

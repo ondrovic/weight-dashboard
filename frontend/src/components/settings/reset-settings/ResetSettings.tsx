@@ -10,7 +10,7 @@ interface ResetSettingsProps {
 
 export const ResetSettings: React.FC<ResetSettingsProps> = ({
   title = 'Reset Settings',
-  description = 'Reset all settings to their default values. This will affect your table columns, chart metrics, default visible metrics, and goals.',
+  description = 'Reset all settings to their default values. This will affect your table columns, chart metrics, default visible metrics, form field layout, metric labels, and goals.',
   onReset,
   loading = false,
   buttonText = 'Reset All Settings',
