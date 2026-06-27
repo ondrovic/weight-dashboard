@@ -1,0 +1,45 @@
+min_version = "2024.9.5"
+
+[tools]
+node = "22"
+yarn = "1.22.22"
+
+[tasks.install]
+description = "Install backend and frontend dependencies"
+alias = "i"
+depends = ["install:backend", "install:frontend"]
+
+[tasks."install:backend"]
+dir = "backend"
+run = "yarn install --frozen-lockfile"
+
+[tasks."install:frontend"]
+dir = "frontend"
+run = "yarn install --frozen-lockfile"
+
+[tasks."dev:backend"]
+description = "Start backend API (ts-node-dev)"
+dir = "backend"
+run = "yarn dev"
+
+[tasks."dev:frontend"]
+description = "Start frontend Vite dev server"
+dir = "frontend"
+run = "yarn dev"
+
+[tasks.dev]
+description = "Start backend and frontend dev servers in parallel"
+run = "mise run dev:backend & mise run dev:frontend & wait"
+
+[tasks.compose]
+description = "Start full stack via Docker Compose"
+alias = "up"
+run = "docker compose up -d"
+
+[tasks."compose:down"]
+description = "Stop Docker Compose stack"
+run = "docker compose down"
+
+[tasks."compose:logs"]
+description = "Tail Docker Compose logs"
+run = "docker compose logs -f"
